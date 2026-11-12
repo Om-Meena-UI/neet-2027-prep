@@ -1,0 +1,102 @@
+{
+  "Physics": {
+    "Class 11": [
+      { "id": "phy-11-1", "title": "Units and Measurements", "weightage": "Moderate" },
+      { "id": "phy-11-2", "title": "Motion in a Straight Line", "weightage": "Moderate" },
+      { "id": "phy-11-3", "title": "Motion in a Plane", "weightage": "Moderate" },
+      { "id": "phy-11-4", "title": "Laws of Motion", "weightage": "High Yield" },
+      { "id": "phy-11-5", "title": "Work, Energy and Power", "weightage": "High Yield" },
+      { "id": "phy-11-6", "title": "System of Particles and Rotational Motion", "weightage": "High Yield" },
+      { "id": "phy-11-7", "title": "Gravitation", "weightage": "Moderate" },
+      { "id": "phy-11-8", "title": "Mechanical Properties of Solids", "weightage": "Low" },
+      { "id": "phy-11-9", "title": "Mechanical Properties of Fluids", "weightage": "Moderate" },
+      { "id": "phy-11-10", "title": "Thermal Properties of Matter", "weightage": "Moderate" },
+      { "id": "phy-11-11", "title": "Thermodynamics", "weightage": "High Yield" },
+      { "id": "phy-11-12", "title": "Kinetic Theory", "weightage": "Moderate" },
+      { "id": "phy-11-13", "title": "Oscillations", "weightage": "Moderate" },
+      { "id": "phy-11-14", "title": "Waves", "weightage": "Moderate" }
+    ],
+    "Class 12": [
+      { "id": "phy-12-1", "title": "Electric Charges and Fields", "weightage": "High Yield" },
+      { "id": "phy-12-2", "title": "Electrostatic Potential and Capacitance", "weightage": "High Yield" },
+      { "id": "phy-12-3", "title": "Current Electricity", "weightage": "High Yield" },
+      { "id": "phy-12-4", "title": "Moving Charges and Magnetism", "weightage": "High Yield" },
+      { "id": "phy-12-5", "title": "Magnetism and Matter", "weightage": "Low" },
+      { "id": "phy-12-6", "title": "Electromagnetic Induction", "weightage": "Moderate" },
+      { "id": "phy-12-7", "title": "Alternating Current", "weightage": "Moderate" },
+      { "id": "phy-12-8", "title": "Electromagnetic Waves", "weightage": "Low" },
+      { "id": "phy-12-9", "title": "Ray Optics and Optical Instruments", "weightage": "High Yield" },
+      { "id": "phy-12-10", "title": "Wave Optics", "weightage": "Moderate" },
+      { "id": "phy-12-11", "title": "Dual Nature of Radiation and Matter", "weightage": "Moderate" },
+      { "id": "phy-12-12", "title": "Atoms", "weightage": "Moderate" },
+      { "id": "phy-12-13", "title": "Nuclei", "weightage": "Moderate" },
+      { "id": "phy-12-14", "title": "Semiconductor Electronics", "weightage": "High Yield" },
+      { "id": "phy-12-15", "title": "Experimental Skills", "weightage": "Moderate" }
+    ]
+  },
+  "Chemistry": {
+    "Class 11": [
+      { "id": "chem-11-1", "title": "Some Basic Concepts of Chemistry", "weightage": "Moderate" },
+      { "id": "chem-11-2", "title": "Structure of Atom", "weightage": "Moderate" },
+      { "id": "chem-11-3", "title": "Classification of Elements and Periodicity", "weightage": "Moderate" },
+      { "id": "chem-11-4", "title": "Chemical Bonding and Molecular Structure", "weightage": "High Yield" },
+      { "id": "chem-11-5", "title": "Thermodynamics", "weightage": "High Yield" },
+      { "id": "chem-11-6", "title": "Equilibrium", "weightage": "High Yield" },
+      { "id": "chem-11-7", "title": "Redox Reactions", "weightage": "Low" },
+      { "id": "chem-11-8", "title": "Organic Chemistry: Some Basic Principles & Techniques", "weightage": "High Yield" },
+      { "id": "chem-11-9", "title": "Hydrocarbons", "weightage": "High Yield" }
+    ],
+    "Class 12": [
+      { "id": "chem-12-1", "title": "Solutions", "weightage": "High Yield" },
+      { "id": "chem-12-2", "title": "Electrochemistry", "weightage": "High Yield" },
+      { "id": "chem-12-3", "title": "Chemical Kinetics", "weightage": "High Yield" },
+      { "id": "chem-12-4", "title": "d- and f-Block Elements", "weightage": "High Yield" },
+      { "id": "chem-12-5", "title": "Coordination Compounds", "weightage": "High Yield" },
+      { "id": "chem-12-6", "title": "p-Block Elements (Group 13 to 18)", "weightage": "High Yield" },
+      { "id": "chem-12-7", "title": "Haloalkanes and Haloarenes", "weightage": "Moderate" },
+      { "id": "chem-12-8", "title": "Alcohols, Phenols and Ethers", "weightage": "High Yield" },
+      { "id": "chem-12-9", "title": "Aldehydes, Ketones and Carboxylic Acids", "weightage": "High Yield" },
+      { "id": "chem-12-10", "title": "Amines", "weightage": "Moderate" },
+      { "id": "chem-12-11", "title": "Biomolecules", "weightage": "Moderate" },
+      { "id": "chem-12-12", "title": "Principles Related to Practical Chemistry", "weightage": "Low" }
+    ]
+  },
+  "Biology": {
+    "Class 11": [
+      { "id": "bio-11-1", "title": "The Living World", "weightage": "Low" },
+      { "id": "bio-11-2", "title": "Biological Classification", "weightage": "Moderate" },
+      { "id": "bio-11-3", "title": "Plant Kingdom", "weightage": "Moderate" },
+      { "id": "bio-11-4", "title": "Animal Kingdom", "weightage": "High Yield" },
+      { "id": "bio-11-5", "title": "Morphology of Flowering Plants", "weightage": "Moderate" },
+      { "id": "bio-11-6", "title": "Anatomy of Flowering Plants", "weightage": "Moderate" },
+      { "id": "bio-11-7", "title": "Structural Organisation in Animals", "weightage": "Low" },
+      { "id": "bio-11-8", "title": "Cell: The Unit of Life", "weightage": "High Yield" },
+      { "id": "bio-11-9", "title": "Biomolecules", "weightage": "High Yield" },
+      { "id": "bio-11-10", "title": "Cell Cycle and Cell Division", "weightage": "High Yield" },
+      { "id": "bio-11-11", "title": "Photosynthesis in Higher Plants", "weightage": "High Yield" },
+      { "id": "bio-11-12", "title": "Respiration in Plants", "weightage": "Moderate" },
+      { "id": "bio-11-13", "title": "Plant Growth and Development", "weightage": "Moderate" },
+      { "id": "bio-11-14", "title": "Breathing and Exchange of Gases", "weightage": "Moderate" },
+      { "id": "bio-11-15", "title": "Body Fluids and Circulation", "weightage": "High Yield" },
+      { "id": "bio-11-16", "title": "Excretory Products and their Elimination", "weightage": "Moderate" },
+      { "id": "bio-11-17", "title": "Locomotion and Movement", "weightage": "Moderate" },
+      { "id": "bio-11-18", "title": "Neural Control and Coordination", "weightage": "Moderate" },
+      { "id": "bio-11-19", "title": "Chemical Coordination and Integration", "weightage": "High Yield" }
+    ],
+    "Class 12": [
+      { "id": "bio-12-1", "title": "Sexual Reproduction in Flowering Plants", "weightage": "High Yield" },
+      { "id": "bio-12-2", "title": "Human Reproduction", "weightage": "High Yield" },
+      { "id": "bio-12-3", "title": "Reproductive Health", "weightage": "Moderate" },
+      { "id": "bio-12-4", "title": "Principles of Inheritance and Variation", "weightage": "High Yield" },
+      { "id": "bio-12-5", "title": "Molecular Basis of Inheritance", "weightage": "High Yield" },
+      { "id": "bio-12-6", "title": "Evolution", "weightage": "Moderate" },
+      { "id": "bio-12-7", "title": "Human Health and Disease", "weightage": "High Yield" },
+      { "id": "bio-12-8", "title": "Microbes in Human Welfare", "weightage": "Low" },
+      { "id": "bio-12-9", "title": "Biotechnology: Principles and Processes", "weightage": "High Yield" },
+      { "id": "bio-12-10", "title": "Biotechnology and its Applications", "weightage": "High Yield" },
+      { "id": "bio-12-11", "title": "Organisms and Populations", "weightage": "High Yield" },
+      { "id": "bio-12-12", "title": "Ecosystem", "weightage": "Moderate" },
+      { "id": "bio-12-13", "title": "Biodiversity and Conservation", "weightage": "Moderate" }
+    ]
+  }
+}

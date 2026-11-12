@@ -1,0 +1,50 @@
+[
+  {
+    "id": "trap-1",
+    "subject": "Physics",
+    "chapter": "Thermodynamics",
+    "front": "Physics vs Chemistry First Law Sign Convention Trap!",
+    "back": "In Physics: ΔQ = ΔU + ΔW (W > 0 when gas EXPANDS). In Chemistry: ΔU = q + w (w > 0 when work is done ON the gas, i.e., compression).",
+    "mastered": false
+  },
+  {
+    "id": "trap-2",
+    "subject": "Chemistry",
+    "chapter": "Chemical Bonding and Molecular Structure",
+    "front": "Why does H₂O have a higher boiling point than HF despite F being more electronegative than O?",
+    "back": "Each H₂O molecule forms up to 4 H-bonds (2 donors + 2 lone pairs) forming a 3D network, whereas HF forms only 2 H-bonds per molecule in zig-zag chains.",
+    "mastered": false
+  },
+  {
+    "id": "trap-3",
+    "subject": "Biology",
+    "chapter": "Molecular Basis of Inheritance",
+    "front": "Which strand of DNA is used as the template for mRNA transcription, and in which direction is mRNA synthesized?",
+    "back": "DNA-dependent RNA polymerase always polymerizes mRNA in 5' → 3' direction using the 3' → 5' template strand. The coding strand (5' → 3') has the same sequence as mRNA (with T instead of U).",
+    "mastered": false
+  },
+  {
+    "id": "trap-4",
+    "subject": "Physics",
+    "chapter": "Ray Optics and Optical Instruments",
+    "front": "Mirror formula vs Lens formula sign trap for focal length & magnification!",
+    "back": "Mirror: 1/v + 1/u = 1/f, m = -v/u. Lens: 1/v - 1/u = 1/f, m = +v/u. Always apply Cartesian sign convention to known quantities ONLY, never to the unknown!",
+    "mastered": false
+  },
+  {
+    "id": "trap-5",
+    "subject": "Chemistry",
+    "chapter": "d- and f-Block Elements",
+    "front": "Why is Cr²⁺ a strong reducing agent while Mn³⁺ is a strong oxidizing agent (both d⁴)?",
+    "back": "Cr²⁺ → Cr³⁺ achieves stable half-filled t₂g³ configuration in aqueous solution. Mn³⁺ → Mn²⁺ achieves stable half-filled d⁵ configuration.",
+    "mastered": false
+  },
+  {
+    "id": "trap-6",
+    "subject": "Biology",
+    "chapter": "Photosynthesis in Higher Plants",
+    "front": "In C₄ plants, where are PEPcase and RuBisCO located respectively?",
+    "back": "PEPcase is in Mesophyll cells (RuBisCO is ABSENT here). RuBisCO is exclusively in Bundle Sheath cells (PEPcase is absent here).",
+    "mastered": false
+  }
+]
