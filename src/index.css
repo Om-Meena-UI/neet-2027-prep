@@ -28,24 +28,37 @@
   background: #3b4152;
 }
 
-/* Subtle glass effect */
+/* Rounded sleek card with ultra-smooth border curvature */
 .sleek-card {
   background: #1a1d24;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 1.5rem;
+  border-radius: 1.75rem; /* modern rounded corners */
   box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6);
 }
 
 .sleek-pill {
   background: #262a34;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
 }
 
-/* React Calendar Heatmap Dark Minimal Styling */
+/* Modern Rounded Squares for Tracker / Heatmap Cells */
 .react-calendar-heatmap text {
   font-size: 8px;
   fill: #64748b;
 }
+
+.react-calendar-heatmap rect {
+  rx: 3px !important;
+  ry: 3px !important;
+  transition: all 0.15s ease-in-out;
+}
+
+.react-calendar-heatmap rect:hover {
+  stroke: rgba(255, 255, 255, 0.4);
+  stroke-width: 1px;
+}
+
 .react-calendar-heatmap .color-empty {
   fill: #181b22;
 }

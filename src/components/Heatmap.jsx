@@ -36,9 +36,9 @@ export default function Heatmap() {
 
   return (
     <div className="space-y-4">
-      {/* 4 Stat Badges styled in dark cards */}
+      {/* 4 Stat Badges styled in soft rounded cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
+        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[#f97316]/10 text-[#f97316] flex items-center justify-center flex-shrink-0">
             <Flame className="w-4 h-4" />
           </div>
@@ -50,7 +50,7 @@ export default function Heatmap() {
           </div>
         </div>
 
-        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
+        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
             <Award className="w-4 h-4" />
           </div>
@@ -62,7 +62,7 @@ export default function Heatmap() {
           </div>
         </div>
 
-        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
+        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[#55e357]/10 text-[#55e357] flex items-center justify-center flex-shrink-0">
             <Clock className="w-4 h-4" />
           </div>
@@ -74,7 +74,7 @@ export default function Heatmap() {
           </div>
         </div>
 
-        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
+        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-sky-500/10 text-sky-400 flex items-center justify-center flex-shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
@@ -87,8 +87,8 @@ export default function Heatmap() {
         </div>
       </div>
 
-      {/* Heatmap Grid in custom dark container */}
-      <div className="p-4 rounded-2xl bg-[#14161c] border border-white/5 overflow-x-auto">
+      {/* Heatmap Grid in rounded container */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-[#14161c] border border-white/5 overflow-x-auto">
         <div className="min-w-[650px]">
           <CalendarHeatmap
             startDate={oneYearAgo}
@@ -100,17 +100,17 @@ export default function Heatmap() {
         </div>
       </div>
 
-      {/* Sleek Legend */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1">
+      {/* Sleek Legend with rounded pill badges */}
+      <div className="flex items-center justify-between text-[11px] text-zinc-400 px-2">
         <span>Less consistent</span>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#181b22] inline-block" />
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#1f4727] inline-block" />
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#277735] inline-block" />
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#39b54a] inline-block" />
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#55e357] inline-block" />
+          <span className="w-3 h-3 rounded-md bg-[#181b22] inline-block border border-white/5" />
+          <span className="w-3 h-3 rounded-md bg-[#1f4727] inline-block" />
+          <span className="w-3 h-3 rounded-md bg-[#277735] inline-block" />
+          <span className="w-3 h-3 rounded-md bg-[#39b54a] inline-block" />
+          <span className="w-3 h-3 rounded-md bg-[#55e357] inline-block shadow-glow-lime" />
         </div>
-        <span className="text-[#55e357]">High focus (3h+)</span>
+        <span className="text-[#55e357] font-semibold">High focus (3h+)</span>
       </div>
     </div>
   );

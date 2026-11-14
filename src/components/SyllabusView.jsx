@@ -63,7 +63,7 @@ export default function SyllabusView() {
         return;
       }
 
-      // Difficulty filter (custom user difficulty or fallback to Medium)
+      // Difficulty filter
       const diff = state.chapterDifficulty?.[ch.id] || 'Medium';
       if (selectedDifficulty !== 'All' && diff !== selectedDifficulty) {
         return;
@@ -86,7 +86,7 @@ export default function SyllabusView() {
       : [activeSubject];
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 space-y-6">
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-4 space-y-6">
       {/* Top Hero / Analytics Strip */}
       <AnalyticsStrip />
 
@@ -95,7 +95,7 @@ export default function SyllabusView() {
         {/* Left Column: Chapters by Subject in Grid Form */}
         <section className="lg:col-span-8 space-y-6">
           {/* Controls: Search, Subject Switcher, and Filters */}
-          <div className="sleek-card p-4 space-y-3">
+          <div className="sleek-card p-4 sm:p-5 space-y-3.5">
             {/* Search Input */}
             <div className="relative">
               <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -116,9 +116,9 @@ export default function SyllabusView() {
               )}
             </div>
 
-            {/* Subject Tabs (Physics, Chemistry, Biology) styled like reference image */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-              <div className="flex items-center gap-1.5 bg-[#14161c] p-1 rounded-full border border-white/5">
+            {/* Subject Tabs (Physics, Chemistry, Biology) */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+              <div className="flex items-center gap-1.5 bg-[#14161c] p-1.5 rounded-full border border-white/5">
                 {['Physics', 'Chemistry', 'Biology', 'All'].map((sub) => {
                   const count =
                     sub === 'All'
@@ -137,7 +137,7 @@ export default function SyllabusView() {
                     >
                       <span>{sub}</span>
                       <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
                           activeSubject === sub ? 'bg-black/20 text-black' : 'bg-[#262a34] text-zinc-300'
                         }`}
                       >
@@ -148,24 +148,22 @@ export default function SyllabusView() {
                 })}
               </div>
 
-              {/* Quick Filters: Class & Difficulty */}
+              {/* Quick Filters */}
               <div className="flex items-center gap-2 text-xs">
-                {/* Class selector */}
                 <select
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
                 >
                   <option value="All">All Classes</option>
                   <option value="Class 11">Class 11</option>
                   <option value="Class 12">Class 12</option>
                 </select>
 
-                {/* Difficulty Filter */}
                 <select
                   value={selectedDifficulty}
                   onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
                 >
                   <option value="All">All Difficulties</option>
                   <option value="Easy">Easy</option>
@@ -173,11 +171,10 @@ export default function SyllabusView() {
                   <option value="Hard">Hard</option>
                 </select>
 
-                {/* Weightage Filter */}
                 <select
                   value={selectedWeightage}
                   onChange={(e) => setSelectedWeightage(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
                 >
                   <option value="All">All Yields</option>
                   <option value="High Yield">High Yield ⭐</option>
@@ -210,7 +207,7 @@ export default function SyllabusView() {
                     No chapters match the selected filter in {subjectName}.
                   </div>
                 ) : (
-                  /* RESPONSIVE GRID LAYOUT FOR CHAPTERS */
+                  /* Modern Rounded Grid Layout */
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {chapters.map((ch) => {
                       const progress = state.chapterProgress[ch.id] || {
@@ -226,31 +223,31 @@ export default function SyllabusView() {
                       return (
                         <div
                           key={ch.id}
-                          className={`sleek-card p-4 flex flex-col justify-between transition-all duration-200 group relative ${
+                          className={`p-4 sm:p-5 rounded-3xl bg-[#1a1d24] border border-white/5 flex flex-col justify-between transition-all duration-200 group relative ${
                             isSelectedForFocus
-                              ? 'border-[#55e357]/40 shadow-glow-lime bg-[#191d24]'
-                              : 'hover:border-white/10 hover:bg-[#1a1e27]'
+                              ? 'border-[#55e357]/40 shadow-glow-lime bg-[#1e232b]'
+                              : 'hover:border-white/10 hover:bg-[#1d212a]'
                           }`}
                         >
-                          {/* Top Card Row: Class badge + Weightage + Difficulty Selector */}
+                          {/* Top Card Row */}
                           <div className="flex items-center justify-between gap-2 mb-2.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#262a34] text-zinc-300">
+                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#262a34] text-zinc-300">
                                 {ch.className}
                               </span>
                               {ch.weightage === 'High Yield' && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
+                                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
                                   High Yield ⭐
                                 </span>
                               )}
                             </div>
 
-                            {/* Difficulty Selector Dropdown */}
+                            {/* Difficulty Selector */}
                             <div className="relative">
                               <select
                                 value={currentDiff}
                                 onChange={(e) => setChapterDifficulty(ch.id, e.target.value)}
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border cursor-pointer focus:outline-none bg-[#14161c] ${diffStyle.badge}`}
+                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border cursor-pointer focus:outline-none bg-[#14161c] ${diffStyle.badge}`}
                                 title="Click to change chapter difficulty"
                               >
                                 <option value="Easy" className="bg-[#1a1d24] text-emerald-400">● Easy</option>
@@ -260,7 +257,7 @@ export default function SyllabusView() {
                             </div>
                           </div>
 
-                          {/* Middle: Title & Target button */}
+                          {/* Middle: Title */}
                           <div className="my-2">
                             <button
                               onClick={() => setSelectedChapterId(ch.id)}
@@ -271,63 +268,62 @@ export default function SyllabusView() {
                             </button>
                           </div>
 
-                          {/* Bottom Card Controls: 3 Checkpoints + Master All Button */}
+                          {/* Bottom Card Controls with rounded pill checkboxes */}
                           <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2 mt-auto">
-                            {/* Checkbox pills */}
                             <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-300">
-                              <label className="flex items-center gap-1 cursor-pointer hover:text-white select-none">
+                              <label className="flex items-center gap-1.5 cursor-pointer hover:text-white select-none">
                                 <input
                                   type="checkbox"
                                   checked={Boolean(progress.ncert)}
                                   onChange={() => toggleChapterStage(ch.id, 'ncert')}
-                                  className="w-3.5 h-3.5 rounded bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
+                                  className="w-4 h-4 rounded-md bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
                                 />
                                 <span>NCERT</span>
                               </label>
 
-                              <label className="flex items-center gap-1 cursor-pointer hover:text-white select-none">
+                              <label className="flex items-center gap-1.5 cursor-pointer hover:text-white select-none">
                                 <input
                                   type="checkbox"
                                   checked={Boolean(progress.pyqs)}
                                   onChange={() => toggleChapterStage(ch.id, 'pyqs')}
-                                  className="w-3.5 h-3.5 rounded bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
+                                  className="w-4 h-4 rounded-md bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
                                 />
                                 <span>PYQs</span>
                               </label>
 
-                              <label className="flex items-center gap-1 cursor-pointer hover:text-white select-none">
+                              <label className="flex items-center gap-1.5 cursor-pointer hover:text-white select-none">
                                 <input
                                   type="checkbox"
                                   checked={Boolean(progress.revision)}
                                   onChange={() => toggleChapterStage(ch.id, 'revision')}
-                                  className="w-3.5 h-3.5 rounded bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
+                                  className="w-4 h-4 rounded-md bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
                                 />
                                 <span>Rev</span>
                               </label>
                             </div>
 
-                            {/* Quick Master toggle */}
-                            <div className="flex items-center gap-1">
+                            {/* Quick Action buttons */}
+                            <div className="flex items-center gap-1.5">
                               <button
                                 onClick={() => setSelectedChapterId(ch.id)}
-                                className={`p-1.5 rounded-lg text-zinc-400 hover:text-white transition ${
+                                className={`p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 transition ${
                                   isSelectedForFocus ? 'text-[#55e357]' : ''
                                 }`}
                                 title="Set as Active Focus Timer Chapter"
                               >
-                                <Target className="w-3.5 h-3.5" />
+                                <Target className="w-4 h-4" />
                               </button>
 
                               <button
                                 onClick={() => toggleChapterAll(ch.id)}
                                 title={isMastered ? 'Mark uncompleted' : 'Mark all 3 stages done'}
-                                className={`p-1.5 rounded-lg transition ${
+                                className={`p-1.5 rounded-xl transition ${
                                   isMastered
-                                    ? 'bg-[#55e357] text-black font-bold'
-                                    : 'bg-[#262a34] text-zinc-400 hover:text-white'
+                                    ? 'bg-[#55e357] text-black font-bold shadow-glow-lime'
+                                    : 'bg-[#262a34] text-zinc-400 hover:text-white hover:bg-[#323744]'
                                 }`}
                               >
-                                <CheckSquare className="w-3.5 h-3.5" />
+                                <CheckSquare className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
@@ -341,7 +337,7 @@ export default function SyllabusView() {
           })}
         </section>
 
-        {/* Right Column: Sticky Sidebar (Countdown & Dual Timer) */}
+        {/* Right Column: Sticky Sidebar */}
         <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
           <Sidebar />
         </div>
