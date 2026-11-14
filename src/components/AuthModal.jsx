@@ -1,27 +1,46 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { X, Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
 export default function AuthModal({ isOpen, onClose }) {
-  const { user, loginWithEmail, loginWithGoogle, logout } = usePrep();
+  const { user, loginWithEmail, signUpWithEmail, loginWithGoogle, logout } = usePrep();
 
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) return;
-    loginWithEmail(email, name);
-    onClose();
+    if (!email || !password) return;
+    setErrorMsg('');
+    setLoading(true);
+
+    let success = false;
+    if (mode === 'login') {
+      success = await loginWithEmail(email, password);
+    } else {
+      success = await signUpWithEmail(email, password, name);
+    }
+
+    setLoading(false);
+    if (success) {
+      onClose();
+    }
   };
 
-  const handleGoogle = () => {
-    loginWithGoogle();
-    onClose();
+  const handleGoogle = async () => {
+    setErrorMsg('');
+    setLoading(true);
+    const success = await loginWithGoogle();
+    setLoading(false);
+    if (success) {
+      onClose();
+    }
   };
 
   return (
@@ -38,9 +57,18 @@ export default function AuthModal({ isOpen, onClose }) {
         {user ? (
           /* Profile view if already logged in */
           <div className="text-center py-4 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[#55e357]/20 border-2 border-[#55e357] text-[#55e357] font-black text-2xl flex items-center justify-center mx-auto shadow-glow-lime">
-              {user.avatar || 'A'}
-            </div>
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.name}
+                className="w-16 h-16 rounded-full mx-auto border-2 border-[#55e357] shadow-glow-lime object-cover"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-[#55e357]/20 border-2 border-[#55e357] text-[#55e357] font-black text-2xl flex items-center justify-center mx-auto shadow-glow-lime">
+                {user.avatar || 'A'}
+              </div>
+            )}
+
             <div>
               <h3 className="text-lg font-bold text-white">{user.name}</h3>
               <p className="text-xs text-zinc-400">{user.email}</p>
@@ -69,7 +97,7 @@ export default function AuthModal({ isOpen, onClose }) {
             </div>
           </div>
         ) : (
-          /* Auth Form: Email & Gmail Login */
+          /* Real Firebase Auth: Google & Email/Password */
           <div className="space-y-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -82,16 +110,23 @@ export default function AuthModal({ isOpen, onClose }) {
                 {mode === 'login' ? 'Sign In to NEET Command' : 'Create Your Aspirant Account'}
               </h3>
               <p className="text-xs text-zinc-400 mt-1">
-                Sync your study heatmap, checklist, timer stats, and mock test scores.
+                Authenticate with your real Google account to sync your study roadmap & stats.
               </p>
             </div>
 
-            {/* Google One-Click Login Button */}
+            {errorMsg && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {/* Google Real OAuth Popup Button */}
             <button
               onClick={handleGoogle}
-              className="w-full flex items-center justify-center gap-3 py-3 rounded-full bg-[#14161c] border border-white/10 hover:border-white/20 hover:bg-[#1a1e27] text-white text-xs font-bold transition shadow-sleek"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-full bg-[#14161c] border border-white/10 hover:border-white/20 hover:bg-[#1a1e27] text-white text-xs font-bold transition shadow-sleek disabled:opacity-50"
             >
-              {/* Google colored SVG */}
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -110,13 +145,13 @@ export default function AuthModal({ isOpen, onClose }) {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Continue with Google / Gmail</span>
+              <span>{loading ? 'Connecting...' : 'Continue with Google / Gmail'}</span>
             </button>
 
             {/* Divider */}
             <div className="flex items-center gap-3 text-zinc-500 text-[11px]">
               <div className="flex-1 h-[1px] bg-white/5" />
-              <span>or with email</span>
+              <span>or sign in with email</span>
               <div className="flex-1 h-[1px] bg-white/5" />
             </div>
 
@@ -166,6 +201,7 @@ export default function AuthModal({ isOpen, onClose }) {
                   <input
                     type="password"
                     required
+                    minLength={6}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -176,9 +212,10 @@ export default function AuthModal({ isOpen, onClose }) {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-full bg-[#55e357] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#42ca44] transition shadow-glow-lime flex items-center justify-center gap-2 mt-2"
+                disabled={loading}
+                className="w-full py-3 rounded-full bg-[#55e357] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#42ca44] transition shadow-glow-lime flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
               >
-                <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
+                <span>{loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </form>

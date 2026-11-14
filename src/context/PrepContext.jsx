@@ -10,6 +10,14 @@ import {
   saveState,
   saveUser,
 } from '../utils/storage';
+import {
+  auth,
+  signInWithGooglePopup,
+  loginWithEmailPass,
+  registerWithEmail,
+  logoutFirebase,
+  onAuthStateChanged,
+} from '../utils/firebase';
 
 const PrepContext = createContext(null);
 
@@ -26,6 +34,25 @@ export function PrepProvider({ children }) {
     saveUser(user);
   }, [user]);
 
+  // Listen to live Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const mappedUser = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Aspirant',
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL,
+          avatar: (firebaseUser.displayName || firebaseUser.email || 'A')[0].toUpperCase(),
+          targetScore: '700+',
+        };
+        setUser(mappedUser);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const showToast = (message, type = 'success') => {
     setToast({ message, type, id: Date.now() });
     setTimeout(() => {
@@ -33,36 +60,81 @@ export function PrepProvider({ children }) {
     }, 3000);
   };
 
-  // User Auth Actions
-  const loginWithEmail = (email, name) => {
-    const formattedUser = {
-      id: `usr-${Date.now()}`,
-      name: name || email.split('@')[0],
-      email: email.trim(),
-      provider: 'email',
-      targetScore: '700+',
-      avatar: (name || email)[0].toUpperCase(),
-    };
-    setUser(formattedUser);
-    showToast(`Welcome back, ${formattedUser.name}!`);
+  // Real Google Sign-In with Firebase Popup
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithGooglePopup();
+      const fbUser = result.user;
+      const mappedUser = {
+        uid: fbUser.uid,
+        name: fbUser.displayName || 'Aspirant',
+        email: fbUser.email,
+        photoURL: fbUser.photoURL,
+        avatar: (fbUser.displayName || 'G')[0].toUpperCase(),
+        targetScore: '700+',
+      };
+      setUser(mappedUser);
+      showToast(`Signed in as ${mappedUser.name}!`);
+      return true;
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      showToast(error.message || 'Failed to sign in with Google.', 'error');
+      return false;
+    }
   };
 
-  const loginWithGoogle = () => {
-    const googleUser = {
-      id: `usr-google-${Date.now()}`,
-      name: 'Google User',
-      email: 'neet.aspirant@gmail.com',
-      provider: 'google',
-      targetScore: '710+',
-      avatar: 'G',
-    };
-    setUser(googleUser);
-    showToast('Signed in with Google!');
+  // Real Email/Password Login
+  const loginWithEmail = async (email, password) => {
+    try {
+      const result = await loginWithEmailPass(email, password);
+      const fbUser = result.user;
+      const mappedUser = {
+        uid: fbUser.uid,
+        name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Aspirant',
+        email: fbUser.email,
+        avatar: (fbUser.displayName || fbUser.email || 'A')[0].toUpperCase(),
+        targetScore: '700+',
+      };
+      setUser(mappedUser);
+      showToast(`Welcome back, ${mappedUser.name}!`);
+      return true;
+    } catch (error) {
+      console.error('Email Login Error:', error);
+      showToast(error.message || 'Login failed. Check your email or password.', 'error');
+      return false;
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    showToast('Signed out successfully.');
+  // Real Email/Password Registration
+  const signUpWithEmail = async (email, password, displayName) => {
+    try {
+      const fbUser = await registerWithEmail(email, password, displayName);
+      const mappedUser = {
+        uid: fbUser.uid,
+        name: displayName || email.split('@')[0],
+        email: fbUser.email,
+        avatar: (displayName || email)[0].toUpperCase(),
+        targetScore: '700+',
+      };
+      setUser(mappedUser);
+      showToast(`Account created! Welcome, ${mappedUser.name}`);
+      return true;
+    } catch (error) {
+      console.error('Signup Error:', error);
+      showToast(error.message || 'Failed to register account.', 'error');
+      return false;
+    }
+  };
+
+  // Logout
+  const logout = async () => {
+    try {
+      await logoutFirebase();
+      setUser(null);
+      showToast('Signed out successfully.');
+    } catch (err) {
+      setUser(null);
+    }
   };
 
   // Flatten syllabus once
@@ -383,6 +455,7 @@ export function PrepProvider({ children }) {
     state,
     user,
     loginWithEmail,
+    signUpWithEmail,
     loginWithGoogle,
     logout,
     syllabusData,
