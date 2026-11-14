@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import {
   Compass,
   MapPin,
@@ -9,12 +9,16 @@ import {
   User,
   Activity,
   LogIn,
+  ListTodo,
+  CheckCircle2,
+  Calendar,
+  Layers,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
 export default function Navbar({ onOpenFlashcards, onOpenAuth }) {
   const { state, user, setActiveTab, exportFullState, importFullState } = usePrep();
-  const fileInputRef = useRef(null);
+  const fileInputRef = React.useRef(null);
 
   const pendingTrapsCount = (state.trapCards || []).filter((c) => !c.mastered).length;
 
@@ -30,72 +34,73 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 pt-4 pb-2 px-4 sm:px-6">
-      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Left Floating Capsule: Logo & Navigation Tabs */}
-        <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-4 py-2 shadow-sleek">
-          {/* Logo badge with neon flame / pulse */}
-          <div className="flex items-center gap-2.5 pr-2 border-r border-white/10">
+    <header className="sticky top-0 z-30 pt-3 pb-2 px-3 sm:px-6">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-2">
+        {/* Left Floating Capsule: Logo & View Switcher */}
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-sleek">
+          {/* Logo badge */}
+          <div className="flex items-center gap-2 pr-1.5 sm:pr-2 border-r border-white/10">
             <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#13151a] to-[#262a34] flex items-center justify-center border border-white/10 text-[#55e357]">
               <Activity className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold text-sm tracking-tight text-white hidden sm:inline">
+            <span className="font-bold text-xs sm:text-sm tracking-tight text-white hidden sm:inline">
               NEET<span className="text-[#55e357]">27</span>
             </span>
           </div>
 
           {/* Navigation Pills */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <button
               onClick={() => setActiveTab('syllabus')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 state.activeTab === 'syllabus'
                   ? 'bg-[#262a34] text-white shadow-inner border border-white/10'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-[#f97316] inline-block animate-pulse" />
-              Roadmap
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] inline-block animate-pulse" />
+              <span>Roadmap</span>
             </button>
 
             <button
               onClick={() => setActiveTab('analytics')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 state.activeTab === 'analytics'
                   ? 'bg-[#262a34] text-white shadow-inner border border-white/10'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-[#55e357] inline-block" />
-              Mock Analytics
+              <span className="w-1.5 h-1.5 rounded-full bg-[#55e357] inline-block" />
+              <span>Mocks</span>
             </button>
           </div>
 
           {/* Trap Cards Pill */}
           <button
             onClick={onOpenFlashcards}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#262a34]/60 hover:bg-[#262a34] text-zinc-300 hover:text-white transition border border-white/5"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#262a34]/60 hover:bg-[#262a34] text-zinc-300 hover:text-white transition border border-white/5"
+            title="NEET Trap Cards"
           >
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Traps</span>
+            <Zap className="w-3 h-3 text-amber-400" />
+            <span className="hidden md:inline">Traps</span>
             {pendingTrapsCount > 0 && (
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#f97316]/20 text-[#f97316] border border-[#f97316]/30">
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#f97316]/20 text-[#f97316] border border-[#f97316]/30">
                 {pendingTrapsCount}
               </span>
             )}
           </button>
         </div>
 
-        {/* Right Floating Capsule: Data Export/Import & Profile / Sign In */}
-        <div className="w-full md:w-auto flex items-center justify-end gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-4 py-2 shadow-sleek">
-          {/* Export JSON */}
+        {/* Right Floating Capsule: Export/Import & Profile / Sign In */}
+        <div className="flex items-center gap-1 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-sleek">
+          {/* Export JSON (Hidden on tiny mobile, visible from sm up) */}
           <button
             onClick={exportFullState}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-400 hover:text-white hover:bg-[#262a34] transition"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-zinc-400 hover:text-white hover:bg-[#262a34] transition"
             title="Download full progress backup"
           >
             <Download className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Backup</span>
+            <span className="hidden md:inline">Backup</span>
           </button>
 
           {/* Import JSON */}
@@ -108,25 +113,33 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth }) {
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-400 hover:text-white hover:bg-[#262a34] transition"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-zinc-400 hover:text-white hover:bg-[#262a34] transition"
             title="Restore JSON backup"
           >
             <Upload className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Restore</span>
+            <span className="hidden md:inline">Restore</span>
           </button>
 
           {/* Profile / Login Button */}
-          <div className="pl-2 border-l border-white/10">
+          <div className="sm:pl-1.5 sm:border-l sm:border-white/10">
             {user ? (
               <button
                 onClick={onOpenAuth}
-                className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#14161c] hover:bg-[#262a34] border border-white/5 transition"
+                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-[#14161c] hover:bg-[#262a34] border border-white/5 transition"
               >
-                <div className="w-6 h-6 rounded-full bg-[#55e357]/20 text-[#55e357] flex items-center justify-center text-xs font-bold border border-[#55e357]/40">
-                  {user.avatar || user.name[0]}
-                </div>
-                <div className="text-left hidden sm:block">
-                  <div className="text-xs font-semibold text-white leading-tight truncate max-w-[100px]">
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.name}
+                    className="w-6 h-6 rounded-full object-cover border border-[#55e357]/40"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-[#55e357]/20 text-[#55e357] flex items-center justify-center text-xs font-bold border border-[#55e357]/40">
+                    {user.avatar || user.name[0]}
+                  </div>
+                )}
+                <div className="text-left hidden md:block">
+                  <div className="text-xs font-semibold text-white leading-tight truncate max-w-[90px]">
                     {user.name}
                   </div>
                   <div className="text-[9px] text-[#55e357] leading-none">Target 700+</div>
@@ -135,10 +148,10 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth }) {
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#55e357] text-black text-xs font-bold hover:bg-[#42ca44] transition shadow-glow-lime"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#55e357] text-black text-xs font-bold hover:bg-[#42ca44] transition shadow-glow-lime"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
+                <span className="hidden sm:inline">Sign In</span>
               </button>
             )}
           </div>

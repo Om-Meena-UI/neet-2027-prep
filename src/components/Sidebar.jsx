@@ -3,6 +3,7 @@ import { Zap, Target, CheckCircle2 } from 'lucide-react';
 import CountdownCard from './CountdownCard';
 import DualTimer from './DualTimer';
 import TodoList from './TodoList';
+import YoutubeMusicEmbed from './YoutubeMusicEmbed';
 import { usePrep } from '../context/PrepContext';
 
 export default function Sidebar() {
@@ -32,17 +33,28 @@ export default function Sidebar() {
 
   return (
     <aside className="space-y-6">
-      {/* Daily To-Do List Widget */}
-      <TodoList />
+      {/* YouTube Music Widget */}
+      <div id="mobile-music-section">
+        <YoutubeMusicEmbed />
+      </div>
 
-      {/* Countdown Card */}
-      <CountdownCard />
+      {/* Daily To-Do List Widget */}
+      <div id="mobile-todo-section">
+        <TodoList />
+      </div>
 
       {/* Dual-Mode Focus Timer */}
-      <DualTimer />
+      <div id="mobile-timer-section">
+        <DualTimer />
+      </div>
+
+      {/* Countdown Card */}
+      <div id="mobile-countdown-section">
+        <CountdownCard />
+      </div>
 
       {/* Smart Focus Queue */}
-      <div className="sleek-card p-6 space-y-4">
+      <div className="sleek-card p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-[#55e357]" />
@@ -54,12 +66,12 @@ export default function Sidebar() {
         </div>
 
         <p className="text-xs text-zinc-400">
-          Algorithmic recommendations: Unmastered high-weightage chapters with maximal score yield.
+          Algorithmic recommendations: Unmastered high-yield chapters.
         </p>
 
         {focusQueue.length === 0 ? (
           <div className="text-center py-6 text-xs text-zinc-400">
-            🎉 Outstanding! All high-yield chapters have been mastered.
+            🎉 All high-yield chapters mastered!
           </div>
         ) : (
           <div className="space-y-2">

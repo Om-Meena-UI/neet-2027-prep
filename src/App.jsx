@@ -4,8 +4,11 @@ import SyllabusView from './components/SyllabusView';
 import MockTestAnalytics from './components/MockTestAnalytics';
 import FlashcardModal from './components/FlashcardModal';
 import AuthModal from './components/AuthModal';
+import FloatingBottomPlayer from './components/FloatingBottomPlayer';
+import MobileBottomNav from './components/MobileBottomNav';
 import { ThemeProvider } from './components/ThemeProvider';
 import { PrepProvider, usePrep } from './context/PrepContext';
+import { MusicProvider } from './context/MusicContext';
 import './index.css';
 
 function AppContent() {
@@ -14,18 +17,24 @@ function AppContent() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black">
-      {/* Sleek Floating Capsule Navbar */}
+    <div className="min-h-screen bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black pb-36 sm:pb-28">
+      {/* Sleek Floating Capsule Top Navbar */}
       <Navbar
         onOpenFlashcards={() => setIsFlashcardOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       {/* Main Body */}
-      <main className="pb-16">
+      <main className="pb-8">
         {state.activeTab === 'syllabus' && <SyllabusView />}
         {state.activeTab === 'analytics' && <MockTestAnalytics />}
       </main>
+
+      {/* Mobile Quick Navigation Pill */}
+      <MobileBottomNav onOpenFlashcards={() => setIsFlashcardOpen(true)} />
+
+      {/* Persistent Floating Bottom Audio Player Bar (Fully Synced with YouTube Music Embed) */}
+      <FloatingBottomPlayer />
 
       {/* Flashcards / Trap Deck Modal */}
       <FlashcardModal
@@ -41,7 +50,7 @@ function AppContent() {
 
       {/* Sleek Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
+        <div className="fixed bottom-28 sm:bottom-24 right-4 sm:right-6 z-50 animate-bounce">
           <div
             className={`px-4 py-2.5 rounded-full shadow-sleek text-xs font-bold flex items-center gap-2 border ${
               toast.type === 'error'
@@ -62,7 +71,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <PrepProvider>
-        <AppContent />
+        <MusicProvider>
+          <AppContent />
+        </MusicProvider>
       </PrepProvider>
     </ThemeProvider>
   );
