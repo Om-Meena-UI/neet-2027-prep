@@ -40,10 +40,8 @@ export default function YoutubeMusicEmbed() {
     setCustomInputUrl('');
   };
 
-  // Embed URL with enablejsapi=1 to allow real-time volume & playback control via postMessage
-  const embedSrc = `https://www.youtube.com/embed/${currentTrack.videoId}?autoplay=${
-    isPlaying ? '1' : '0'
-  }&enablejsapi=1&version=3&rel=0`;
+  // Fixed static embedSrc: DOES NOT recompute on isPlaying so iframe NEVER reloads when pausing/playing!
+  const embedSrc = `https://www.youtube.com/embed/${currentTrack.videoId}?enablejsapi=1&version=3&rel=0&playsinline=1`;
 
   return (
     <div className="sleek-card p-5 space-y-4 relative overflow-hidden">
@@ -110,7 +108,7 @@ export default function YoutubeMusicEmbed() {
         </div>
       </div>
 
-      {/* Main Video IFrame (Connected to ref for postMessage live volume & playback commands) */}
+      {/* Main Video IFrame (Stays stable with no src mutation on play/pause) */}
       <div
         className={`relative w-full rounded-2xl overflow-hidden bg-black border border-white/10 shadow-sleek transition-all duration-300 ${
           isSidebarPlayerHidden
@@ -120,7 +118,6 @@ export default function YoutubeMusicEmbed() {
       >
         <iframe
           ref={iframeRef}
-          key={`${currentTrack.videoId}`}
           className="w-full h-full"
           src={embedSrc}
           title={currentTrack.name}
