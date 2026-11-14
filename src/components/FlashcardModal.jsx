@@ -26,14 +26,21 @@ export default function FlashcardModal({ isOpen, onClose }) {
     return true;
   });
 
-  const currentCard = filteredCards[currentIndex] || filteredCards[0];
+  // Guard against out of bounds index when filtering or deleting cards
+  const safeIndex =
+    filteredCards.length === 0
+      ? 0
+      : Math.min(currentIndex, filteredCards.length - 1);
+  const currentCard = filteredCards[safeIndex];
 
   const handleNext = () => {
+    if (filteredCards.length <= 1) return;
     setIsFlipped(false);
     setCurrentIndex((prev) => (prev + 1) % filteredCards.length);
   };
 
   const handlePrev = () => {
+    if (filteredCards.length <= 1) return;
     setIsFlipped(false);
     setCurrentIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
   };
@@ -193,7 +200,7 @@ export default function FlashcardModal({ isOpen, onClose }) {
                 Save Flashcard
               </button>
             </form>
-          ) : filteredCards.length === 0 ? (
+          ) : !currentCard ? (
             <div className="text-center py-10 text-zinc-400 text-xs">
               No flashcards in this filter view.
             </div>
@@ -221,7 +228,7 @@ export default function FlashcardModal({ isOpen, onClose }) {
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-3 border-t border-white/5">
-                  <span>Card {currentIndex + 1} of {filteredCards.length}</span>
+                  <span>Card {safeIndex + 1} of {filteredCards.length}</span>
                   {currentCard.mastered ? (
                     <span className="text-[#55e357] font-semibold flex items-center gap-1">
                       <CheckCircle className="w-3.5 h-3.5" /> Mastered

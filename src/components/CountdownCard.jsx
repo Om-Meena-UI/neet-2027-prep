@@ -5,18 +5,20 @@ import { usePrep } from '../context/PrepContext';
 export default function CountdownCard() {
   const { state, setCountdownTarget } = usePrep();
   const [isEditing, setIsEditing] = useState(false);
-  const [inputDate, setInputDate] = useState(state.countdownTarget);
+  const [inputDate, setInputDate] = useState(state.countdownTarget || '2027-05-02T14:00:00+05:30');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    setInputDate(state.countdownTarget);
+    if (state.countdownTarget) {
+      setInputDate(state.countdownTarget);
+    }
   }, [state.countdownTarget]);
 
   useEffect(() => {
     const calculate = () => {
-      const targetTime = new Date(state.countdownTarget).getTime();
+      const targetTime = new Date(state.countdownTarget || '2027-05-02T14:00:00+05:30').getTime();
       const now = new Date().getTime();
-      const diff = Math.max(0, targetTime - now);
+      const diff = isNaN(targetTime) ? 0 : Math.max(0, targetTime - now);
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -32,7 +34,7 @@ export default function CountdownCard() {
   }, [state.countdownTarget]);
 
   const handleSave = () => {
-    if (inputDate) {
+    if (inputDate && !isNaN(new Date(inputDate).getTime())) {
       setCountdownTarget(inputDate);
       setIsEditing(false);
     }
@@ -66,7 +68,7 @@ export default function CountdownCard() {
           <div className="flex items-center gap-2">
             <input
               type="datetime-local"
-              value={inputDate.slice(0, 16)}
+              value={inputDate ? inputDate.slice(0, 16) : ''}
               onChange={(e) => setInputDate(e.target.value)}
               className="text-xs p-2 rounded-xl border border-white/10 bg-[#1a1d24] text-white flex-1 focus:outline-none focus:border-[#55e357]"
             />

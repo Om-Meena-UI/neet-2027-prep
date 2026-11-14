@@ -10,7 +10,7 @@ export default function DualTimer() {
   const [isRunning, setIsRunning] = useState(false);
   const [customMinutes, setCustomMinutes] = useState(25);
 
-  const selectedChapter = allChapters.find((c) => c.id === state.selectedChapterId) || allChapters[0];
+  const selectedChapter = (allChapters && allChapters.find((c) => c.id === state.selectedChapterId)) || (allChapters && allChapters[0]) || { id: '', title: 'All Chapters', subject: 'General' };
 
   useEffect(() => {
     if (mode === 'pomodoro') {
@@ -25,13 +25,15 @@ export default function DualTimer() {
     let interval = null;
     if (isRunning && secondsLeft > 0) {
       interval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1);
+        setSecondsLeft((prev) => Math.max(0, prev - 1));
       }, 1000);
     } else if (isRunning && secondsLeft === 0) {
       setIsRunning(false);
       const sessionDuration = mode === 'pomodoro' ? 25 : 180;
       logFocusMinutes(sessionDuration);
-      alert(`🎉 Session completed! ${sessionDuration} minutes logged to your streak.`);
+      if (typeof window !== 'undefined') {
+        alert(`🎉 Session completed! ${sessionDuration} minutes logged to your streak.`);
+      }
     }
     return () => clearInterval(interval);
   }, [isRunning, secondsLeft, mode, logFocusMinutes]);
@@ -49,6 +51,7 @@ export default function DualTimer() {
     const mins = parseInt(customMinutes, 10);
     if (!isNaN(mins) && mins > 0) {
       logFocusMinutes(mins);
+      setCustomMinutes(25);
     }
   };
 
@@ -107,7 +110,7 @@ export default function DualTimer() {
           onChange={(e) => setSelectedChapterId(e.target.value)}
           className="w-full text-xs font-medium bg-[#14161c] border border-white/5 rounded-2xl p-3 text-white truncate focus:outline-none focus:border-[#55e357]/40 cursor-pointer"
         >
-          {allChapters.map((ch) => (
+          {allChapters && allChapters.map((ch) => (
             <option key={ch.id} value={ch.id} className="bg-[#1a1d24] text-white">
               [{ch.subject.slice(0, 4)}] {ch.title}
             </option>
@@ -126,7 +129,7 @@ export default function DualTimer() {
         </div>
       </div>
 
-      {/* Controls styled like the reference buttons ("Get Started", "View demo") */}
+      {/* Controls */}
       <div className="flex items-center gap-3">
         <button
           onClick={toggleTimer}
