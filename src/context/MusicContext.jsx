@@ -53,10 +53,31 @@ export function MusicProvider({ children }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isSidebarPlayerHidden, setIsSidebarPlayerHidden] = useState(false);
 
+  const iframeRef = useRef(null);
   const currentTrack = tracks[currentTrackIndex] || tracks[0];
 
+  // Helper to send postMessage commands to YouTube IFrame
+  const postToIframe = (func, args = []) => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({
+          event: 'command',
+          func: func,
+          args: args,
+        }),
+        '*'
+      );
+    }
+  };
+
   const togglePlay = () => {
-    setIsPlaying((prev) => !prev);
+    if (isPlaying) {
+      postToIframe('pauseVideo');
+      setIsPlaying(false);
+    } else {
+      postToIframe('playVideo');
+      setIsPlaying(true);
+    }
   };
 
   const changeTrack = (newIndex) => {
@@ -79,13 +100,26 @@ export function MusicProvider({ children }) {
     setIsPlaying(true);
   };
 
+  // Live Volume adjustment via postMessage
   const handleVolumeChange = (newVol) => {
     setVolume(newVol);
     setIsMuted(newVol === 0);
+    postToIframe('setVolume', [newVol]);
+    if (newVol > 0 && isMuted) {
+      postToIframe('unMute');
+    }
   };
 
+  // Live Mute toggle via postMessage
   const toggleMute = () => {
-    setIsMuted((prev) => !prev);
+    if (isMuted) {
+      postToIframe('unMute');
+      postToIframe('setVolume', [volume || 50]);
+      setIsMuted(false);
+    } else {
+      postToIframe('mute');
+      setIsMuted(true);
+    }
   };
 
   return (
@@ -99,6 +133,7 @@ export function MusicProvider({ children }) {
         isMuted,
         isSidebarPlayerHidden,
         setIsSidebarPlayerHidden,
+        iframeRef,
         togglePlay,
         changeTrack,
         loadCustomVideo,

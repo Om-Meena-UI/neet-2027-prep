@@ -4,7 +4,6 @@ import {
   Search,
   Eye,
   EyeOff,
-  Radio,
 } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
 
@@ -14,6 +13,7 @@ export default function YoutubeMusicEmbed() {
     isPlaying,
     isSidebarPlayerHidden,
     setIsSidebarPlayerHidden,
+    iframeRef,
     loadCustomVideo,
   } = useMusic();
 
@@ -40,10 +40,10 @@ export default function YoutubeMusicEmbed() {
     setCustomInputUrl('');
   };
 
-  // Construct iframe embed URL with autoplay parameter synchronized with isPlaying state
+  // Embed URL with enablejsapi=1 to allow real-time volume & playback control via postMessage
   const embedSrc = `https://www.youtube.com/embed/${currentTrack.videoId}?autoplay=${
     isPlaying ? '1' : '0'
-  }&enablejsapi=1&rel=0`;
+  }&enablejsapi=1&version=3&rel=0`;
 
   return (
     <div className="sleek-card p-5 space-y-4 relative overflow-hidden">
@@ -110,7 +110,7 @@ export default function YoutubeMusicEmbed() {
         </div>
       </div>
 
-      {/* Main Video IFrame (When hidden, remains mounted with h-0 & opacity-0 so audio keeps playing uninterrupted) */}
+      {/* Main Video IFrame (Connected to ref for postMessage live volume & playback commands) */}
       <div
         className={`relative w-full rounded-2xl overflow-hidden bg-black border border-white/10 shadow-sleek transition-all duration-300 ${
           isSidebarPlayerHidden
@@ -119,7 +119,8 @@ export default function YoutubeMusicEmbed() {
         }`}
       >
         <iframe
-          key={`${currentTrack.videoId}-${isPlaying}`}
+          ref={iframeRef}
+          key={`${currentTrack.videoId}`}
           className="w-full h-full"
           src={embedSrc}
           title={currentTrack.name}
