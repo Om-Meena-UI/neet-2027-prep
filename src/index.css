@@ -5,28 +5,59 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
   body {
-    @apply bg-[#F8FAFC] text-slate-900 dark:bg-[#0B0F19] dark:text-slate-100 transition-colors duration-200;
+    @apply bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black;
   }
 }
 
-/* Subtle custom scrollbar */
+/* Sleek minimalist dark scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+  background: #2a2e3a;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400 dark:bg-slate-600;
+  background: #3b4152;
 }
 
-/* 3D card flip helpers for Flashcards */
-.perspective-1000 {
-  perspective: 1000px;
+/* Subtle glass effect */
+.sleek-card {
+  background: #1a1d24;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.5rem;
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6);
+}
+
+.sleek-pill {
+  background: #262a34;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* React Calendar Heatmap Dark Minimal Styling */
+.react-calendar-heatmap text {
+  font-size: 8px;
+  fill: #64748b;
+}
+.react-calendar-heatmap .color-empty {
+  fill: #181b22;
+}
+.react-calendar-heatmap .color-scale-1 {
+  fill: #1f4727;
+}
+.react-calendar-heatmap .color-scale-2 {
+  fill: #277735;
+}
+.react-calendar-heatmap .color-scale-3 {
+  fill: #39b54a;
+}
+.react-calendar-heatmap .color-scale-4 {
+  fill: #55e357;
 }

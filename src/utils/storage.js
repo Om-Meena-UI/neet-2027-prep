@@ -1,6 +1,7 @@
 import defaultTraps from '../data/defaultTraps.json';
 
 export const STORAGE_KEY = 'neet2027_command_center_v1';
+export const USER_KEY = 'neet2027_user_auth';
 export const THEME_KEY = 'neet2027_theme';
 export const DEFAULT_TARGET_DATE = '2027-05-02T14:00:00+05:30';
 
@@ -12,6 +13,29 @@ export function getLocalDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+const defaultTodos = [
+  { id: 'todo-1', text: 'Solve 30 PYQs for Ray Optics', completed: false, priority: 'high' },
+  { id: 'todo-2', text: 'Revise Periodic Table trends & exceptions', completed: true, priority: 'medium' },
+  { id: 'todo-3', text: 'Read NCERT Biology summary for Genetics', completed: false, priority: 'high' },
+];
+
+export function loadUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function saveUser(user) {
+  if (!user) {
+    localStorage.removeItem(USER_KEY);
+  } else {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+}
+
 export function getDefaultState() {
   return {
     version: 1,
@@ -19,12 +43,16 @@ export function getDefaultState() {
     countdownTarget: DEFAULT_TARGET_DATE,
     // chapterProgress: { [chapterId]: { ncert: bool, pyqs: bool, revision: bool } }
     chapterProgress: {},
+    // chapterDifficulty: { [chapterId]: 'Easy' | 'Medium' | 'Hard' }
+    chapterDifficulty: {},
     // dailyActivity: { 'YYYY-MM-DD': { minutes: number, checks: number } }
     dailyActivity: {},
     // trapCards: array of { id, subject, chapter, front, back, mastered }
     trapCards: defaultTraps,
     // mockTests: array of { id, name, date, physics, chemistry, biology, total, notes }
     mockTests: [],
+    // todos: array of { id, text, completed, priority }
+    todos: defaultTodos,
     selectedChapterId: 'phy-11-4',
     heatmapCollapsed: false,
   };
@@ -41,9 +69,11 @@ export function loadState() {
       ...defaults,
       ...parsed,
       chapterProgress: parsed.chapterProgress || {},
+      chapterDifficulty: parsed.chapterDifficulty || {},
       dailyActivity: parsed.dailyActivity || {},
       trapCards: Array.isArray(parsed.trapCards) ? parsed.trapCards : defaultTraps,
       mockTests: Array.isArray(parsed.mockTests) ? parsed.mockTests : [],
+      todos: Array.isArray(parsed.todos) ? parsed.todos : defaultTodos,
     };
   } catch (err) {
     console.error('Failed to load state from localStorage:', err);
@@ -73,6 +103,7 @@ export function exportStateJSON(state) {
   return JSON.stringify(
     {
       ...state,
+      user: loadUser(),
       theme: localStorage.getItem(THEME_KEY) || 'dark',
       exportedAt: new Date().toISOString(),
     },
@@ -94,15 +125,21 @@ export function parseAndValidateImport(jsonText) {
       parsed.chapterProgress && typeof parsed.chapterProgress === 'object'
         ? parsed.chapterProgress
         : {},
+    chapterDifficulty:
+      parsed.chapterDifficulty && typeof parsed.chapterDifficulty === 'object'
+        ? parsed.chapterDifficulty
+        : {},
     dailyActivity:
       parsed.dailyActivity && typeof parsed.dailyActivity === 'object'
         ? parsed.dailyActivity
         : {},
     trapCards: Array.isArray(parsed.trapCards) ? parsed.trapCards : defaults.trapCards,
     mockTests: Array.isArray(parsed.mockTests) ? parsed.mockTests : [],
+    todos: Array.isArray(parsed.todos) ? parsed.todos : defaults.todos,
   };
   return {
     state: normalized,
+    user: parsed.user || null,
     theme: parsed.theme === 'light' || parsed.theme === 'dark' ? parsed.theme : null,
   };
 }

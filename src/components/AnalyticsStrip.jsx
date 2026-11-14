@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Target, ChevronDown, ChevronUp, Sparkles, CheckCircle } from 'lucide-react';
 import Heatmap from './Heatmap';
 import { usePrep } from '../context/PrepContext';
 
@@ -7,73 +7,64 @@ export default function AnalyticsStrip() {
   const { metrics, state, toggleHeatmapCollapsed } = usePrep();
   const { overallReadiness, subjectStats, totalChapters, masteredChapters } = metrics;
 
-  const subjectTheme = {
-    Physics: { bar: 'bg-indigo-500', text: 'text-indigo-500' },
-    Chemistry: { bar: 'bg-emerald-500', text: 'text-emerald-500' },
-    Biology: { bar: 'bg-teal-500', text: 'text-teal-500' },
+  const subjectPillTheme = {
+    Physics: { dot: 'bg-sky-400', bar: 'bg-sky-400' },
+    Chemistry: { dot: 'bg-[#55e357]', bar: 'bg-[#55e357]' },
+    Biology: { dot: 'bg-emerald-400', bar: 'bg-emerald-400' },
   };
 
   return (
-    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
-      {/* Top row: Readiness dial & subject progress */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-        {/* Left: Overall Readiness Metric */}
-        <div className="md:col-span-4 flex items-center gap-4 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 pb-4 md:pb-0 md:pr-4">
-          <div className="relative w-20 h-20 flex-shrink-0 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <path
-                className="text-slate-100 dark:text-slate-800"
-                strokeWidth="3.5"
-                stroke="currentColor"
-                fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-              <path
-                className="text-emerald-500 transition-all duration-700 ease-out"
-                strokeDasharray={`${overallReadiness}, 100`}
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                stroke="currentColor"
-                fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-            </svg>
-            <div className="absolute text-center">
-              <span className="text-xl font-bold font-mono text-slate-900 dark:text-white leading-none">
-                {overallReadiness}%
-              </span>
-            </div>
+    <div className="sleek-card p-6 relative overflow-hidden">
+      {/* Background radial accent glow */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#55e357]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+      {/* Main Stats Header */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        {/* Left: Big Hero Headline with Neon Accent, styled like "Miles Together Stories Forever!" */}
+        <div className="md:col-span-5 flex flex-col justify-center pr-2">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2 h-2 rounded-full bg-[#55e357] animate-ping" />
+            <span className="text-xs uppercase font-bold tracking-widest text-[#55e357]">
+              Syllabus Progress
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <Target className="w-3.5 h-3.5 text-emerald-500" />
-              Syllabus Readiness
-            </div>
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
-              {masteredChapters} of {totalChapters} chapters done
-            </div>
-            <p className="text-[11px] text-slate-500">3 checkpoints per chapter (NCERT, PYQs, Revision)</p>
+
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+            Target <span className="text-[#55e357]">NEET 2027</span>
+            <br />
+            Mission 700+
+          </h2>
+
+          <div className="flex items-baseline gap-2 mt-3">
+            <span className="text-4xl sm:text-5xl font-mono font-black text-white">
+              {overallReadiness}%
+            </span>
+            <span className="text-xs text-zinc-400">
+              ({masteredChapters} of {totalChapters} chapters complete)
+            </span>
           </div>
         </div>
 
-        {/* Right: 3 Subject Progress Bars */}
-        <div className="md:col-span-8 space-y-3">
+        {/* Right: Subject progress bars in sleek pill containers */}
+        <div className="md:col-span-7 space-y-3">
           {Object.entries(subjectStats).map(([subject, stat]) => {
-            const theme = subjectTheme[subject] || { bar: 'bg-indigo-500', text: 'text-indigo-500' };
+            const theme = subjectPillTheme[subject] || { dot: 'bg-[#55e357]', bar: 'bg-[#55e357]' };
             return (
-              <div key={subject} className="space-y-1">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-slate-700 dark:text-slate-300">{subject}</span>
+              <div key={subject} className="bg-[#14161c] border border-white/5 rounded-2xl p-3.5 space-y-2">
+                <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 text-[11px]">
-                      {stat.masteredChapters}/{stat.totalChapters} chapters
-                    </span>
-                    <span className={`font-mono ${theme.text}`}>{stat.percent}%</span>
+                    <span className={`w-2 h-2 rounded-full ${theme.dot}`} />
+                    <span className="font-semibold text-white">{subject}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-zinc-400 font-mono text-[11px]">
+                    <span>{stat.masteredChapters}/{stat.totalChapters} Ch</span>
+                    <span className="text-white font-bold">{stat.percent}%</span>
                   </div>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+
+                <div className="w-full h-1.5 rounded-full bg-[#20242f] overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ease-out ${theme.bar}`}
+                    className={`h-full rounded-full transition-all duration-700 ease-out ${theme.bar}`}
                     style={{ width: `${stat.percent}%` }}
                   />
                 </div>
@@ -83,21 +74,24 @@ export default function AnalyticsStrip() {
         </div>
       </div>
 
-      {/* Heatmap header toggle */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+      {/* Heatmap Section Toggle */}
+      <div className="mt-6 pt-4 border-t border-white/5">
         <button
           onClick={toggleHeatmapCollapsed}
-          className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition py-1"
+          className="w-full flex items-center justify-between text-xs font-semibold text-zinc-400 hover:text-white transition py-1"
         >
-          <span>Daily Consistency Heatmap (Last 365 Days)</span>
-          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-[#55e357]" />
+            <span>Consistency & 365-Day Activity Log</span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400">
             <span>{state.heatmapCollapsed ? 'Show Heatmap' : 'Hide Heatmap'}</span>
             {state.heatmapCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
           </div>
         </button>
 
         {!state.heatmapCollapsed && (
-          <div className="mt-3">
+          <div className="mt-4">
             <Heatmap />
           </div>
         )}

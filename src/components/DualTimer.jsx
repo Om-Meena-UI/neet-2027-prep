@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Clock, Target } from 'lucide-react';
+import { Play, Pause, RotateCcw, Clock, Target, CheckCircle2 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
 export default function DualTimer() {
@@ -63,81 +63,86 @@ export default function DualTimer() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+    <div className="sleek-card p-6 space-y-5">
+      {/* Header and Mode Pills */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-indigo-500" />
-          <h3 className="font-semibold text-slate-900 dark:text-white text-base">Focus & Exam Timer</h3>
+          <Clock className="w-4 h-4 text-[#55e357]" />
+          <h3 className="font-bold text-white text-sm tracking-tight">Focus & Exam Timer</h3>
         </div>
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-medium">
+
+        {/* Dual Mode Switcher */}
+        <div className="flex bg-[#14161c] p-1 rounded-full border border-white/5 text-xs font-medium">
           <button
             onClick={() => setMode('pomodoro')}
-            className={`px-3 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1 rounded-full transition-all ${
               mode === 'pomodoro'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-[#262a34] text-white font-semibold shadow-inner border border-white/10'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             25m Sprint
           </button>
           <button
             onClick={() => setMode('exam')}
-            className={`px-3 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1 rounded-full transition-all ${
               mode === 'exam'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-[#262a34] text-white font-semibold shadow-inner border border-white/10'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
-            180m Mock Exam
+            180m Exam
           </button>
         </div>
       </div>
 
-      {/* Linked chapter picker */}
-      <div className="mb-4">
-        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
-          <Target className="w-3.5 h-3.5 text-emerald-500" />
-          Focusing on Chapter
+      {/* Linked Chapter Selector styled as sleek capsule */}
+      <div>
+        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
+          <Target className="w-3.5 h-3.5 text-[#55e357]" />
+          Target Chapter
         </label>
         <select
           value={state.selectedChapterId || (selectedChapter ? selectedChapter.id : '')}
           onChange={(e) => setSelectedChapterId(e.target.value)}
-          className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-200 truncate focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full text-xs font-medium bg-[#14161c] border border-white/5 rounded-2xl p-3 text-white truncate focus:outline-none focus:border-[#55e357]/40 cursor-pointer"
         >
           {allChapters.map((ch) => (
-            <option key={ch.id} value={ch.id}>
+            <option key={ch.id} value={ch.id} className="bg-[#1a1d24] text-white">
               [{ch.subject.slice(0, 4)}] {ch.title}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Big Digit display */}
-      <div className="text-center py-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 mb-4">
-        <div className="text-4xl sm:text-5xl font-mono font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      {/* Big Digits Display with sleek dark circular styling */}
+      <div className="text-center py-5 bg-[#14161c] rounded-3xl border border-white/5 relative overflow-hidden">
+        <div className="text-4xl sm:text-5xl font-mono font-black tracking-tight text-white">
           {formatTime(secondsLeft)}
         </div>
-        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">
-          {mode === 'pomodoro' ? 'Pomodoro Session' : 'Full 3h NEET Simulation'}
+        <div className="text-[11px] font-medium text-zinc-400 mt-1 flex items-center justify-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#55e357]" />
+          {mode === 'pomodoro' ? 'Pomodoro Session' : '3-Hour Full Mock Simulation'}
         </div>
       </div>
 
-      {/* Timer Controls */}
-      <div className="flex items-center justify-center gap-3">
+      {/* Controls styled like the reference buttons ("Get Started", "View demo") */}
+      <div className="flex items-center gap-3">
         <button
           onClick={toggleTimer}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition shadow-sleek ${
             isRunning
-              ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20'
-              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20'
+              ? 'bg-[#f97316] text-black hover:bg-[#ea580c]'
+              : 'bg-[#55e357] text-black hover:bg-[#42ca44] shadow-glow-lime'
           }`}
         >
           {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-          {isRunning ? 'Pause' : 'Start Focus'}
+          {isRunning ? 'Pause Session' : 'Start Focus'}
         </button>
+
         <button
           onClick={resetTimer}
-          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="p-3 rounded-full bg-[#262a34] text-zinc-400 hover:text-white border border-white/5 transition"
           title="Reset Timer"
         >
           <RotateCcw className="w-4 h-4" />
@@ -145,21 +150,21 @@ export default function DualTimer() {
       </div>
 
       {/* Manual Quick Add */}
-      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-        <span className="text-xs text-slate-500 dark:text-slate-400">Log past study:</span>
-        <div className="flex items-center gap-1.5">
+      <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+        <span className="text-zinc-400 text-[11px]">Log offline study:</span>
+        <div className="flex items-center gap-2">
           <input
             type="number"
             min="5"
             step="5"
             value={customMinutes}
             onChange={(e) => setCustomMinutes(e.target.value)}
-            className="w-14 text-xs font-mono p-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-center"
+            className="w-14 text-xs font-mono p-1 rounded-xl bg-[#14161c] border border-white/10 text-white text-center focus:outline-none"
           />
-          <span className="text-xs text-slate-500">mins</span>
+          <span className="text-[11px] text-zinc-400">mins</span>
           <button
             onClick={handleManualLog}
-            className="px-2.5 py-1 text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded font-medium transition"
+            className="px-3 py-1 rounded-full bg-[#262a34] hover:bg-[#323744] text-white text-[11px] font-semibold border border-white/5 transition"
           >
             + Add
           </button>

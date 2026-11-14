@@ -5,25 +5,64 @@ import {
   exportStateJSON,
   getLocalDateKey,
   loadState,
+  loadUser,
   parseAndValidateImport,
   saveState,
+  saveUser,
 } from '../utils/storage';
 
 const PrepContext = createContext(null);
 
 export function PrepProvider({ children }) {
   const [state, setState] = useState(() => loadState());
+  const [user, setUser] = useState(() => loadUser());
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
     saveState(state);
   }, [state]);
 
+  useEffect(() => {
+    saveUser(user);
+  }, [user]);
+
   const showToast = (message, type = 'success') => {
     setToast({ message, type, id: Date.now() });
     setTimeout(() => {
       setToast((prev) => (prev && Date.now() - prev.id >= 2800 ? null : prev));
     }, 3000);
+  };
+
+  // User Auth Actions
+  const loginWithEmail = (email, name) => {
+    const formattedUser = {
+      id: `usr-${Date.now()}`,
+      name: name || email.split('@')[0],
+      email: email.trim(),
+      provider: 'email',
+      targetScore: '700+',
+      avatar: (name || email)[0].toUpperCase(),
+    };
+    setUser(formattedUser);
+    showToast(`Welcome back, ${formattedUser.name}!`);
+  };
+
+  const loginWithGoogle = () => {
+    const googleUser = {
+      id: `usr-google-${Date.now()}`,
+      name: 'Google User',
+      email: 'neet.aspirant@gmail.com',
+      provider: 'google',
+      targetScore: '710+',
+      avatar: 'G',
+    };
+    setUser(googleUser);
+    showToast('Signed in with Google!');
+  };
+
+  const logout = () => {
+    setUser(null);
+    showToast('Signed out successfully.');
   };
 
   // Flatten syllabus once
@@ -173,6 +212,49 @@ export function PrepProvider({ children }) {
     });
   };
 
+  const setChapterDifficulty = (chapterId, difficulty) => {
+    setState((prev) => ({
+      ...prev,
+      chapterDifficulty: {
+        ...(prev.chapterDifficulty || {}),
+        [chapterId]: difficulty,
+      },
+    }));
+    showToast(`Difficulty set to ${difficulty}`);
+  };
+
+  // To-Do list operations
+  const addTodo = (text, priority = 'medium') => {
+    if (!text.trim()) return;
+    const newTodo = {
+      id: `todo-${Date.now()}`,
+      text: text.trim(),
+      completed: false,
+      priority,
+    };
+    setState((prev) => ({
+      ...prev,
+      todos: [newTodo, ...(prev.todos || [])],
+    }));
+    showToast('Task added to Daily To-Do!');
+  };
+
+  const toggleTodo = (id) => {
+    setState((prev) => ({
+      ...prev,
+      todos: (prev.todos || []).map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
+      ),
+    }));
+  };
+
+  const deleteTodo = (id) => {
+    setState((prev) => ({
+      ...prev,
+      todos: (prev.todos || []).filter((t) => t.id !== id),
+    }));
+  };
+
   const logFocusMinutes = (minutes) => {
     if (!minutes || minutes <= 0) return;
     const todayKey = getLocalDateKey();
@@ -281,8 +363,11 @@ export function PrepProvider({ children }) {
 
   const importFullState = (jsonText, onThemeSync) => {
     try {
-      const { state: imported, theme } = parseAndValidateImport(jsonText);
+      const { state: imported, user: importedUser, theme } = parseAndValidateImport(jsonText);
       setState(imported);
+      if (importedUser) {
+        setUser(importedUser);
+      }
       if (theme && onThemeSync) {
         onThemeSync(theme);
       }
@@ -296,6 +381,10 @@ export function PrepProvider({ children }) {
 
   const value = {
     state,
+    user,
+    loginWithEmail,
+    loginWithGoogle,
+    logout,
     syllabusData,
     allChapters,
     metrics,
@@ -305,6 +394,10 @@ export function PrepProvider({ children }) {
     setActiveTab,
     toggleChapterStage,
     toggleChapterAll,
+    setChapterDifficulty,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
     logFocusMinutes,
     setCountdownTarget,
     setSelectedChapterId,

@@ -1,57 +1,65 @@
 import React from 'react';
-import { Target, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { Zap, Target, CheckCircle2 } from 'lucide-react';
 import CountdownCard from './CountdownCard';
 import DualTimer from './DualTimer';
+import TodoList from './TodoList';
 import { usePrep } from '../context/PrepContext';
 
 export default function Sidebar() {
   const { allChapters, state, toggleChapterAll, setSelectedChapterId } = usePrep();
 
-  // Smart Focus Queue: find high-yield unmastered chapters first, then moderate
+  // Smart Focus Queue: find unmastered high-yield chapters first
   const uncompletedHighYield = allChapters
     .filter((ch) => {
       const prog = state.chapterProgress[ch.id] || {};
       const isMastered = prog.ncert && prog.pyqs && prog.revision;
       return !isMastered && ch.weightage === 'High Yield';
     })
-    .slice(0, 4);
+    .slice(0, 3);
 
   const additionalRecommendations =
-    uncompletedHighYield.length < 4
+    uncompletedHighYield.length < 3
       ? allChapters
           .filter((ch) => {
             const prog = state.chapterProgress[ch.id] || {};
             const isMastered = prog.ncert && prog.pyqs && prog.revision;
             return !isMastered && ch.weightage === 'Moderate';
           })
-          .slice(0, 4 - uncompletedHighYield.length)
+          .slice(0, 3 - uncompletedHighYield.length)
       : [];
 
   const focusQueue = [...uncompletedHighYield, ...additionalRecommendations];
 
   return (
-    <aside className="space-y-5">
+    <aside className="space-y-6">
+      {/* Daily To-Do List Widget */}
+      <TodoList />
+
+      {/* Countdown Card */}
       <CountdownCard />
+
+      {/* Dual-Mode Focus Timer */}
       <DualTimer />
 
-      {/* Smart Focus Queue (Today's High Yield Picks) */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
+      {/* Smart Focus Queue */}
+      <div className="sleek-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-amber-500 fill-amber-500/20" />
-            <h3 className="font-semibold text-slate-900 dark:text-white text-base">Smart Focus Queue</h3>
+            <Zap className="w-4 h-4 text-[#55e357]" />
+            <h3 className="font-bold text-white text-sm tracking-tight">Smart Focus Queue</h3>
           </div>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#55e357]/10 text-[#55e357] border border-[#55e357]/20 uppercase tracking-wider">
             High Priority
           </span>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-          Algorithmic picks: Unmastered high-weightage chapters with highest score impact.
+
+        <p className="text-xs text-zinc-400">
+          Algorithmic recommendations: Unmastered high-weightage chapters with maximal score yield.
         </p>
 
         {focusQueue.length === 0 ? (
-          <div className="text-center py-6 text-xs text-slate-500">
-            🎉 Incredible work! All high-yield chapters are mastered!
+          <div className="text-center py-6 text-xs text-zinc-400">
+            🎉 Outstanding! All high-yield chapters have been mastered.
           </div>
         ) : (
           <div className="space-y-2">
@@ -62,23 +70,25 @@ export default function Sidebar() {
               return (
                 <div
                   key={ch.id}
-                  className="group p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/80 transition flex items-center justify-between gap-3"
+                  className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 hover:border-white/10 hover:bg-[#191d24] transition-all flex items-center justify-between gap-3 group"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#262a34] text-zinc-300">
                         {ch.subject}
                       </span>
-                      <span className="text-[10px] text-slate-400">{ch.className}</span>
+                      <span className="text-[10px] text-zinc-400">{ch.className}</span>
                     </div>
+
                     <button
                       onClick={() => setSelectedChapterId(ch.id)}
-                      className="text-xs font-semibold text-left text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate block w-full"
+                      className="text-xs font-semibold text-left text-white group-hover:text-[#55e357] truncate block w-full transition-colors"
                       title={ch.title}
                     >
                       {ch.title}
                     </button>
-                    <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-2">
+
+                    <div className="text-[10px] text-zinc-400 mt-1 flex items-center gap-2 font-mono">
                       <span>{doneCount}/3 stages completed</span>
                     </div>
                   </div>
@@ -86,17 +96,18 @@ export default function Sidebar() {
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       onClick={() => setSelectedChapterId(ch.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition"
-                      title="Set as Active Focus Timer Target"
+                      className="p-2 rounded-xl bg-[#262a34] text-zinc-400 hover:text-white hover:bg-[#323744] transition"
+                      title="Set active in Focus Timer"
                     >
-                      <Target className="w-4 h-4" />
+                      <Target className="w-3.5 h-3.5" />
                     </button>
+
                     <button
                       onClick={() => toggleChapterAll(ch.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition"
+                      className="p-2 rounded-xl bg-[#262a34] text-zinc-400 hover:text-[#55e357] hover:bg-[#323744] transition"
                       title="Mark all 3 stages done"
                     >
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
