@@ -4,14 +4,14 @@ import {
   Search,
   Eye,
   EyeOff,
-  Maximize2,
-  Minimize2,
+  Radio,
 } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
 
 export default function YoutubeMusicEmbed() {
   const {
     currentTrack,
+    isPlaying,
     isSidebarPlayerHidden,
     setIsSidebarPlayerHidden,
     loadCustomVideo,
@@ -40,6 +40,11 @@ export default function YoutubeMusicEmbed() {
     setCustomInputUrl('');
   };
 
+  // Construct iframe embed URL with autoplay parameter synchronized with isPlaying state
+  const embedSrc = `https://www.youtube.com/embed/${currentTrack.videoId}?autoplay=${
+    isPlaying ? '1' : '0'
+  }&enablejsapi=1&rel=0`;
+
   return (
     <div className="sleek-card p-5 space-y-4 relative overflow-hidden">
       {/* Background radial accent glow */}
@@ -58,10 +63,10 @@ export default function YoutubeMusicEmbed() {
             <h3 className="font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
               <span>YouTube Music</span>
               <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 font-bold border border-red-500/30">
-                Synced
+                Live
               </span>
             </h3>
-            <p className="text-[10px] text-zinc-400">Synced with bottom floating player</p>
+            <p className="text-[10px] text-zinc-400">Stream playlists directly in your dashboard</p>
           </div>
         </div>
 
@@ -74,7 +79,11 @@ export default function YoutubeMusicEmbed() {
                 ? 'bg-[#262a34] text-zinc-300 border-white/10 hover:text-white'
                 : 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
             }`}
-            title={isSidebarPlayerHidden ? 'Show Video Screen' : 'Hide Video Screen (Music Keeps Playing)'}
+            title={
+              isSidebarPlayerHidden
+                ? 'Show Video Screen'
+                : 'Hide Video Screen (Music Keeps Playing)'
+            }
           >
             {isSidebarPlayerHidden ? (
               <>
@@ -101,23 +110,40 @@ export default function YoutubeMusicEmbed() {
         </div>
       </div>
 
-      {/* Main Video Screen (When hidden, container stays mounted in zero height so music never stops!) */}
+      {/* Main Video IFrame (When hidden, remains mounted with h-0 & opacity-0 so audio keeps playing uninterrupted) */}
       <div
-        className={`relative w-full rounded-2xl overflow-hidden aspect-video bg-black border border-white/10 shadow-sleek transition-all duration-300 ${
-          isSidebarPlayerHidden ? 'hidden' : 'block'
+        className={`relative w-full rounded-2xl overflow-hidden bg-black border border-white/10 shadow-sleek transition-all duration-300 ${
+          isSidebarPlayerHidden
+            ? 'h-0 opacity-0 pointer-events-none -my-2 border-0'
+            : 'aspect-video h-auto opacity-100'
         }`}
       >
-        <div id="global-sync-yt-player" className="w-full h-full" />
+        <iframe
+          key={`${currentTrack.videoId}-${isPlaying}`}
+          className="w-full h-full"
+          src={embedSrc}
+          title={currentTrack.name}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
       </div>
 
       {/* When video screen is hidden, show audio status banner */}
       {isSidebarPlayerHidden && (
-        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center justify-between text-xs text-zinc-400">
           <div className="flex items-center gap-2 truncate">
-            <span className="w-2 h-2 rounded-full bg-[#55e357] animate-pulse flex-shrink-0" />
-            <span className="text-white font-semibold truncate text-[11px]">{currentTrack.name}</span>
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isPlaying ? 'bg-[#55e357] animate-pulse' : 'bg-zinc-600'
+              } flex-shrink-0`}
+            />
+            <span className="text-white font-semibold truncate text-[11px]">
+              {currentTrack.name}
+            </span>
           </div>
-          <span className="text-[10px] text-zinc-500 flex-shrink-0">Audio playing</span>
+          <span className="text-[10px] text-zinc-500 flex-shrink-0">
+            {isPlaying ? 'Audio Streaming' : 'Paused'}
+          </span>
         </div>
       )}
 

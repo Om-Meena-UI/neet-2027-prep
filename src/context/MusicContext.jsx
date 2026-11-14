@@ -51,85 +51,21 @@ export function MusicProvider({ children }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
   const [isSidebarPlayerHidden, setIsSidebarPlayerHidden] = useState(false);
 
-  const playerRef = useRef(null);
   const currentTrack = tracks[currentTrackIndex] || tracks[0];
 
-  useEffect(() => {
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-      window.onYouTubeIframeAPIReady = initPlayer;
-    } else {
-      initPlayer();
-    }
-
-    function initPlayer() {
-      if (playerRef.current) return;
-      playerRef.current = new window.YT.Player('global-sync-yt-player', {
-        height: '100%',
-        width: '100%',
-        videoId: DEFAULT_TRACKS[0].videoId,
-        playerVars: {
-          autoplay: 0,
-          controls: 1,
-          disablekb: 0,
-          fs: 1,
-          modestbranding: 1,
-          rel: 0,
-        },
-        events: {
-          onReady: (event) => {
-            setPlayerReady(true);
-            event.target.setVolume(volume);
-          },
-          onStateChange: (event) => {
-            if (event.data === window.YT.PlayerState.PLAYING) {
-              setIsPlaying(true);
-            } else if (
-              event.data === window.YT.PlayerState.PAUSED ||
-              event.data === window.YT.PlayerState.ENDED
-            ) {
-              setIsPlaying(false);
-            }
-          },
-        },
-      });
-    }
-  }, []);
-
   const togglePlay = () => {
-    if (!playerRef.current || !playerReady) {
-      setIsPlaying(!isPlaying);
-      return;
-    }
-
-    if (isPlaying) {
-      playerRef.current.pauseVideo();
-      setIsPlaying(false);
-    } else {
-      playerRef.current.playVideo();
-      setIsPlaying(true);
-    }
+    setIsPlaying((prev) => !prev);
   };
 
   const changeTrack = (newIndex) => {
     const validIndex = (newIndex + tracks.length) % tracks.length;
     setCurrentTrackIndex(validIndex);
-    const nextTrack = tracks[validIndex];
-
-    if (playerRef.current && playerReady) {
-      playerRef.current.loadVideoById(nextTrack.videoId);
-      playerRef.current.playVideo();
-      setIsPlaying(true);
-    }
+    setIsPlaying(true);
   };
 
-  const loadCustomVideo = (videoId, title = 'Custom Video Stream') => {
+  const loadCustomVideo = (videoId, title = 'Custom YouTube Stream') => {
     const customTrack = {
       id: `custom-${Date.now()}`,
       name: title,
@@ -140,37 +76,16 @@ export function MusicProvider({ children }) {
     };
     setTracks((prev) => [customTrack, ...prev]);
     setCurrentTrackIndex(0);
-
-    if (playerRef.current && playerReady) {
-      playerRef.current.loadVideoById(videoId);
-      playerRef.current.playVideo();
-      setIsPlaying(true);
-    }
+    setIsPlaying(true);
   };
 
   const handleVolumeChange = (newVol) => {
     setVolume(newVol);
     setIsMuted(newVol === 0);
-
-    if (playerRef.current && playerReady) {
-      playerRef.current.setVolume(newVol);
-      if (newVol > 0 && playerRef.current.isMuted()) {
-        playerRef.current.unMute();
-      }
-    }
   };
 
   const toggleMute = () => {
-    if (!playerRef.current || !playerReady) return;
-
-    if (isMuted) {
-      playerRef.current.unMute();
-      playerRef.current.setVolume(volume || 50);
-      setIsMuted(false);
-    } else {
-      playerRef.current.mute();
-      setIsMuted(true);
-    }
+    setIsMuted((prev) => !prev);
   };
 
   return (
@@ -182,7 +97,6 @@ export function MusicProvider({ children }) {
         isPlaying,
         volume,
         isMuted,
-        playerReady,
         isSidebarPlayerHidden,
         setIsSidebarPlayerHidden,
         togglePlay,
