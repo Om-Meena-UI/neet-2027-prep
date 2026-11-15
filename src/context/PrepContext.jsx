@@ -31,17 +31,28 @@ export function PrepProvider({ children }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
 
+  // Save locally and auto-sync changes to Cloud Firestore in background
   useEffect(() => {
     saveState(state);
-  }, [state]);
+
+    if (user?.uid && state.settings?.autoCloudSync !== false) {
+      const handler = setTimeout(() => {
+        saveUserStateToCloud(user.uid, state)
+          .then(() => setLastSyncTime(new Date()))
+          .catch((e) => console.warn('Background cloud sync notice:', e));
+      }, 1500); // 1.5s debounce to smoothly batch rapid ticks/edits
+
+      return () => clearTimeout(handler);
+    }
+  }, [state, user?.uid]);
 
   useEffect(() => {
     saveUser(user);
   }, [user]);
 
-  // Listen to live Firebase Auth state changes
+  // Listen to live Firebase Auth state changes & auto-sync from Cloud on new device
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const mappedUser = {
           uid: firebaseUser.uid,
@@ -52,6 +63,29 @@ export function PrepProvider({ children }) {
           targetScore: '700+',
         };
         setUser(mappedUser);
+
+        // Auto-pull latest study progress from Cloud Firestore on login
+        try {
+          const cloudData = await loadUserStateFromCloud(firebaseUser.uid);
+          if (cloudData) {
+            setState((prev) => ({
+              ...prev,
+              ...cloudData,
+              settings: {
+                ...DEFAULT_SETTINGS,
+                ...(cloudData.settings || {}),
+              },
+            }));
+            setLastSyncTime(new Date());
+            showToast(`☁️ Restored prep progress from cloud for ${mappedUser.name}!`);
+          } else {
+            // First time login with this account: back up current state to cloud
+            await saveUserStateToCloud(firebaseUser.uid, state);
+            setLastSyncTime(new Date());
+          }
+        } catch (err) {
+          console.warn('Auto cloud sync on login notice:', err);
+        }
       }
     });
 
