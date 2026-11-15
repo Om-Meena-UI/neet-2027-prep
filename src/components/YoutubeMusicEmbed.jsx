@@ -4,16 +4,23 @@ import {
   Search,
   Eye,
   EyeOff,
+  Play,
+  Pause,
+  Radio,
 } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
 
 export default function YoutubeMusicEmbed() {
   const {
+    tracks,
     currentTrack,
+    currentTrackIndex,
     isPlaying,
     isSidebarPlayerHidden,
     setIsSidebarPlayerHidden,
     iframeRef,
+    changeTrack,
+    togglePlay,
     loadCustomVideo,
   } = useMusic();
 
@@ -108,6 +115,33 @@ export default function YoutubeMusicEmbed() {
         </div>
       </div>
 
+      {/* 1-Click Study Station Pills */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+        {tracks.map((track, idx) => {
+          const isSelected = currentTrackIndex === idx;
+          return (
+            <button
+              key={track.id}
+              onClick={() => changeTrack(idx)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition whitespace-nowrap border ${
+                isSelected
+                  ? 'bg-[#55e357] text-black border-[#55e357] shadow-glow-lime font-bold'
+                  : 'bg-[#14161c] text-zinc-400 hover:text-white border-white/5 hover:border-white/10'
+              }`}
+            >
+              <span>{track.tag}</span>
+              {isSelected && isPlaying && (
+                <div className="flex items-end gap-0.5 h-2.5">
+                  <span className="w-0.5 bg-black rounded-full eq-bar-1" />
+                  <span className="w-0.5 bg-black rounded-full eq-bar-2" />
+                  <span className="w-0.5 bg-black rounded-full eq-bar-3" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Video IFrame (Stays stable with no src mutation on play/pause) */}
       <div
         className={`relative w-full rounded-2xl overflow-hidden bg-black border border-white/10 shadow-sleek transition-all duration-300 ${
@@ -128,20 +162,46 @@ export default function YoutubeMusicEmbed() {
 
       {/* When video screen is hidden, show audio status banner */}
       {isSidebarPlayerHidden && (
-        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center justify-between text-xs text-zinc-400">
-          <div className="flex items-center gap-2 truncate">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isPlaying ? 'bg-[#55e357] animate-pulse' : 'bg-zinc-600'
-              } flex-shrink-0`}
-            />
-            <span className="text-white font-semibold truncate text-[11px]">
-              {currentTrack.name}
-            </span>
+        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+              <img
+                src={currentTrack.cover}
+                alt={currentTrack.name}
+                className="w-full h-full object-cover"
+              />
+              {isPlaying && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="flex items-end gap-0.5 h-3">
+                    <span className="w-0.5 bg-[#55e357] rounded-full eq-bar-1" />
+                    <span className="w-0.5 bg-[#55e357] rounded-full eq-bar-2" />
+                    <span className="w-0.5 bg-[#55e357] rounded-full eq-bar-3" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="text-white font-bold truncate text-[11px] leading-tight">
+                {currentTrack.name}
+              </div>
+              <div className="text-[10px] text-zinc-400">
+                {currentTrack.tag} • {isPlaying ? 'Playing' : 'Paused'}
+              </div>
+            </div>
           </div>
-          <span className="text-[10px] text-zinc-500 flex-shrink-0">
-            {isPlaying ? 'Audio Streaming' : 'Paused'}
-          </span>
+
+          <button
+            onClick={togglePlay}
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition shadow-sm flex-shrink-0 active:scale-95 ${
+              isPlaying ? 'bg-[#55e357] text-black' : 'bg-[#262a34] text-white hover:bg-white/10'
+            }`}
+          >
+            {isPlaying ? (
+              <Pause className="w-3 h-3 fill-current" />
+            ) : (
+              <Play className="w-3 h-3 fill-current ml-0.5" />
+            )}
+          </button>
         </div>
       )}
 
