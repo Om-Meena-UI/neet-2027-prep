@@ -6,10 +6,11 @@ import {
   Layers,
   Music,
   CheckCircle2,
+  Settings,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
-export default function MobileBottomNav({ onOpenFlashcards }) {
+export default function MobileBottomNav({ onOpenFlashcards, onOpenSettings }) {
   const { state, setActiveTab } = usePrep();
 
   const scrollToSection = (id) => {
@@ -66,6 +67,14 @@ export default function MobileBottomNav({ onOpenFlashcards }) {
         >
           <BarChart2 className="w-4 h-4" />
           <span className="text-[10px]">Mocks</span>
+        </button>
+
+        <button
+          onClick={onOpenSettings}
+          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-full text-zinc-400 hover:text-white transition-all"
+        >
+          <Settings className="w-4 h-4" />
+          <span className="text-[10px]">Settings</span>
         </button>
       </div>
     </nav>

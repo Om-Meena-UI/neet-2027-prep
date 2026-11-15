@@ -36,11 +36,23 @@ export function saveUser(user) {
   }
 }
 
+export const DEFAULT_SETTINGS = {
+  targetScore: 700,
+  dreamCollege: 'AIIMS New Delhi',
+  dailyHoursGoal: 8,
+  pomodoroFocusMin: 25,
+  pomodoroBreakMin: 5,
+  soundAlerts: true,
+  cardDensity: 'comfortable',
+  autoCloudSync: true,
+};
+
 export function getDefaultState() {
   return {
     version: 1,
     activeTab: 'syllabus',
     countdownTarget: DEFAULT_TARGET_DATE,
+    settings: DEFAULT_SETTINGS,
     // chapterProgress: { [chapterId]: { ncert: bool, pyqs: bool, revision: bool } }
     chapterProgress: {},
     // chapterDifficulty: { [chapterId]: 'Easy' | 'Medium' | 'Hard' }
@@ -68,6 +80,10 @@ export function loadState() {
     return {
       ...defaults,
       ...parsed,
+      settings: {
+        ...DEFAULT_SETTINGS,
+        ...(parsed.settings || {}),
+      },
       chapterProgress: parsed.chapterProgress || {},
       chapterDifficulty: parsed.chapterDifficulty || {},
       dailyActivity: parsed.dailyActivity || {},

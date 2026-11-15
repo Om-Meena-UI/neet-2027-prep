@@ -13,10 +13,11 @@ import {
   CheckCircle2,
   Calendar,
   Layers,
+  Settings,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
-export default function Navbar({ onOpenFlashcards, onOpenAuth }) {
+export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings }) {
   const { state, user, setActiveTab, exportFullState, importFullState } = usePrep();
   const fileInputRef = React.useRef(null);
 
@@ -118,6 +119,16 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth }) {
           >
             <Upload className="w-3.5 h-3.5 text-zinc-400" />
             <span className="hidden md:inline">Restore</span>
+          </button>
+
+          {/* Settings Button */}
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-zinc-300 hover:text-white hover:bg-[#262a34] transition border border-white/5"
+            title="Command Center Settings"
+          >
+            <Settings className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="hidden md:inline">Settings</span>
           </button>
 
           {/* Profile / Login Button */}

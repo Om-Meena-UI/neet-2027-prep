@@ -17,7 +17,10 @@ import {
   registerWithEmail,
   logoutFirebase,
   onAuthStateChanged,
+  saveUserStateToCloud,
+  loadUserStateFromCloud,
 } from '../utils/firebase';
+import { DEFAULT_SETTINGS, getDefaultState } from '../utils/storage';
 
 const PrepContext = createContext(null);
 
@@ -25,6 +28,8 @@ export function PrepProvider({ children }) {
   const [state, setState] = useState(() => loadState());
   const [user, setUser] = useState(() => loadUser());
   const [toast, setToast] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
 
   useEffect(() => {
     saveState(state);
@@ -421,6 +426,84 @@ export function PrepProvider({ children }) {
     }));
   };
 
+  const updateSettings = (partial) => {
+    setState((prev) => {
+      const updatedSettings = {
+        ...(prev.settings || DEFAULT_SETTINGS),
+        ...partial,
+      };
+      const newState = {
+        ...prev,
+        settings: updatedSettings,
+      };
+      if (user?.uid && updatedSettings.autoCloudSync) {
+        saveUserStateToCloud(user.uid, newState).catch((err) =>
+          console.warn('Silent cloud sync failed:', err)
+        );
+      }
+      return newState;
+    });
+    showToast('Settings saved!');
+  };
+
+  const syncToCloud = async () => {
+    if (!user?.uid) {
+      showToast('Please sign in to sync with Cloud.', 'error');
+      return false;
+    }
+    setIsSyncing(true);
+    try {
+      await saveUserStateToCloud(user.uid, state);
+      setLastSyncTime(new Date());
+      showToast('☁️ Progress safely synced to Cloud!');
+      setIsSyncing(false);
+      return true;
+    } catch (err) {
+      setIsSyncing(false);
+      showToast('Cloud sync failed: ' + (err.message || 'Network error'), 'error');
+      return false;
+    }
+  };
+
+  const loadFromCloud = async () => {
+    if (!user?.uid) {
+      showToast('Please sign in first.', 'error');
+      return false;
+    }
+    setIsSyncing(true);
+    try {
+      const cloudData = await loadUserStateFromCloud(user.uid);
+      if (cloudData) {
+        setState((prev) => ({
+          ...prev,
+          ...cloudData,
+          settings: {
+            ...DEFAULT_SETTINGS,
+            ...(cloudData.settings || {}),
+          },
+        }));
+        setLastSyncTime(new Date());
+        showToast('☁️ Cloud data restored successfully!');
+      } else {
+        showToast('No existing cloud backup found. Backing up current state...');
+        await saveUserStateToCloud(user.uid, state);
+        setLastSyncTime(new Date());
+      }
+      setIsSyncing(false);
+      return true;
+    } catch (err) {
+      setIsSyncing(false);
+      showToast('Failed to pull from cloud: ' + err.message, 'error');
+      return false;
+    }
+  };
+
+  const resetAllState = () => {
+    const defaults = getDefaultState();
+    setState(defaults);
+    showToast('All progress reset to default.', 'error');
+  };
+
   const exportFullState = () => {
     const dataStr = exportStateJSON(state);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -482,6 +565,12 @@ export function PrepProvider({ children }) {
     deleteMockTest,
     exportFullState,
     importFullState,
+    updateSettings,
+    syncToCloud,
+    loadFromCloud,
+    resetAllState,
+    isSyncing,
+    lastSyncTime,
   };
 
   return <PrepContext.Provider value={value}>{children}</PrepContext.Provider>;

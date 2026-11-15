@@ -3,23 +3,47 @@ import { Play, Pause, RotateCcw, Clock, Target, CheckCircle2 } from 'lucide-reac
 import { usePrep } from '../context/PrepContext';
 
 export default function DualTimer() {
-  const { allChapters, state, setSelectedChapterId, logFocusMinutes } = usePrep();
+  const { allChapters, state, setSelectedChapterId, logFocusMinutes, showToast } = usePrep();
+
+  const pomodoroMinutes = state.settings?.pomodoroFocusMin || 25;
+  const soundEnabled = state.settings?.soundAlerts !== false;
 
   const [mode, setMode] = useState('pomodoro'); // 'pomodoro' | 'exam'
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [secondsLeft, setSecondsLeft] = useState(pomodoroMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [customMinutes, setCustomMinutes] = useState(25);
+  const [customMinutes, setCustomMinutes] = useState(pomodoroMinutes);
 
   const selectedChapter = (allChapters && allChapters.find((c) => c.id === state.selectedChapterId)) || (allChapters && allChapters[0]) || { id: '', title: 'All Chapters', subject: 'General' };
 
   useEffect(() => {
     if (mode === 'pomodoro') {
-      setSecondsLeft(25 * 60);
+      setSecondsLeft(pomodoroMinutes * 60);
     } else {
       setSecondsLeft(180 * 60);
     }
     setIsRunning(false);
-  }, [mode]);
+  }, [mode, pomodoroMinutes]);
+
+  const playChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.8);
+    } catch (e) {
+      // Audio context blocked by browser
+    }
+  };
 
   useEffect(() => {
     let interval = null;
@@ -29,14 +53,15 @@ export default function DualTimer() {
       }, 1000);
     } else if (isRunning && secondsLeft === 0) {
       setIsRunning(false);
-      const sessionDuration = mode === 'pomodoro' ? 25 : 180;
+      const sessionDuration = mode === 'pomodoro' ? pomodoroMinutes : 180;
       logFocusMinutes(sessionDuration);
-      if (typeof window !== 'undefined') {
-        alert(`🎉 Session completed! ${sessionDuration} minutes logged to your streak.`);
+      if (soundEnabled) {
+        playChime();
       }
+      showToast(`🎉 Session completed! ${sessionDuration} minutes logged to your streak.`);
     }
     return () => clearInterval(interval);
-  }, [isRunning, secondsLeft, mode, logFocusMinutes]);
+  }, [isRunning, secondsLeft, mode, pomodoroMinutes, soundEnabled, logFocusMinutes, showToast]);
 
   const toggleTimer = () => {
     setIsRunning((prev) => !prev);
@@ -44,7 +69,7 @@ export default function DualTimer() {
 
   const resetTimer = () => {
     setIsRunning(false);
-    setSecondsLeft(mode === 'pomodoro' ? 25 * 60 : 180 * 60);
+    setSecondsLeft(mode === 'pomodoro' ? pomodoroMinutes * 60 : 180 * 60);
   };
 
   const handleManualLog = () => {

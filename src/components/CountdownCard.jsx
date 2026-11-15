@@ -122,8 +122,13 @@ export default function CountdownCard() {
         </div>
       </div>
 
-      <div className="mt-3 text-center text-[11px] text-zinc-400">
-        Scheduled: First Sunday of May 2027 (2:00 PM IST)
+      <div className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+        <span className="text-zinc-300 font-medium truncate max-w-[170px]" title={state.settings?.dreamCollege || 'AIIMS New Delhi'}>
+          🎯 {state.settings?.dreamCollege || 'AIIMS New Delhi'}
+        </span>
+        <span className="font-bold text-[#55e357] bg-[#55e357]/10 px-2.5 py-0.5 rounded-full border border-[#55e357]/20 text-[11px]">
+          Target {state.settings?.targetScore || 700}+
+        </span>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import SyllabusView from './components/SyllabusView';
 import MockTestAnalytics from './components/MockTestAnalytics';
 import FlashcardModal from './components/FlashcardModal';
 import AuthModal from './components/AuthModal';
+import SettingsModal from './components/SettingsModal';
 import FloatingBottomPlayer from './components/FloatingBottomPlayer';
 import MobileBottomNav from './components/MobileBottomNav';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -15,6 +16,7 @@ function AppContent() {
   const { state, toast } = usePrep();
   const [isFlashcardOpen, setIsFlashcardOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black pb-36 sm:pb-28">
@@ -22,6 +24,7 @@ function AppContent() {
       <Navbar
         onOpenFlashcards={() => setIsFlashcardOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main Body */}
@@ -31,7 +34,10 @@ function AppContent() {
       </main>
 
       {/* Mobile Quick Navigation Pill */}
-      <MobileBottomNav onOpenFlashcards={() => setIsFlashcardOpen(true)} />
+      <MobileBottomNav
+        onOpenFlashcards={() => setIsFlashcardOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
 
       {/* Persistent Floating Bottom Audio Player Bar (Fully Synced with YouTube Music Embed) */}
       <FloatingBottomPlayer />
@@ -48,9 +54,15 @@ function AppContent() {
         onClose={() => setIsAuthOpen(false)}
       />
 
+      {/* Impeccable Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+
       {/* Sleek Toast Notification */}
       {toast && (
-        <div className="fixed bottom-28 sm:bottom-24 right-4 sm:right-6 z-50 animate-bounce">
+        <div className="fixed bottom-28 sm:bottom-24 right-4 sm:right-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200 ease-out">
           <div
             className={`px-4 py-2.5 rounded-full shadow-sleek text-xs font-bold flex items-center gap-2 border ${
               toast.type === 'error'

@@ -20,6 +20,8 @@ export default function SyllabusView() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedWeightage, setSelectedWeightage] = useState('All');
 
+  const isCompact = state.settings?.cardDensity === 'compact';
+
   // Difficulty badge & theme styles
   const difficultyConfig = {
     Easy: {
@@ -223,7 +225,9 @@ export default function SyllabusView() {
                       return (
                         <div
                           key={ch.id}
-                          className={`p-4 sm:p-5 rounded-3xl bg-[#1a1d24] border border-white/5 flex flex-col justify-between transition-all duration-200 group relative ${
+                          className={`${
+                            isCompact ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'
+                          } rounded-3xl bg-[#1a1d24] border border-white/5 flex flex-col justify-between transition-all duration-200 group relative ${
                             isSelectedForFocus
                               ? 'border-[#55e357]/40 shadow-glow-lime bg-[#1e232b]'
                               : 'hover:border-white/10 hover:bg-[#1d212a]'
