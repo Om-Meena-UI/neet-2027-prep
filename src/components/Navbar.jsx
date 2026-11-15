@@ -16,6 +16,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
+import logoImg from '../assets/logo.png';
 
 export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings }) {
   const { state, user, setActiveTab, exportFullState, importFullState } = usePrep();
@@ -42,7 +43,7 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
           {/* Logo badge */}
           <div className="flex items-center gap-2 pr-1.5 sm:pr-2 border-r border-white/10">
             <div className="w-7 h-7 rounded-xl bg-black flex items-center justify-center border border-white/10 overflow-hidden shadow-inner">
-              <img src="/logo.png" alt="NEET 2027" className="w-full h-full object-cover" />
+              <img src={logoImg} alt="NEET 2027" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-xs sm:text-sm tracking-tight text-white hidden sm:inline">
               NEET<span className="text-[#55e357]">27</span>
