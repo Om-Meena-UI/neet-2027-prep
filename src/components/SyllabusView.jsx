@@ -19,6 +19,7 @@ export default function SyllabusView() {
   const [selectedClass, setSelectedClass] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedWeightage, setSelectedWeightage] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState('All'); // 'All' | 'Active' | 'Mastered'
 
   const isCompact = state.settings?.cardDensity === 'compact';
 
@@ -39,6 +40,21 @@ export default function SyllabusView() {
       badge: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
       dot: 'bg-rose-500',
     },
+  };
+
+  const hasActiveFilters =
+    searchTerm !== '' ||
+    selectedClass !== 'All' ||
+    selectedDifficulty !== 'All' ||
+    selectedWeightage !== 'All' ||
+    selectedStatus !== 'All';
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedClass('All');
+    setSelectedDifficulty('All');
+    setSelectedWeightage('All');
+    setSelectedStatus('All');
   };
 
   // Group chapters by Subject
@@ -71,6 +87,16 @@ export default function SyllabusView() {
         return;
       }
 
+      // Status filter
+      const prog = state.chapterProgress?.[ch.id] || {};
+      const isMastered = Boolean(prog.ncert && prog.pyqs && prog.revision);
+      if (selectedStatus === 'Active' && isMastered) {
+        return;
+      }
+      if (selectedStatus === 'Mastered' && !isMastered) {
+        return;
+      }
+
       if (subjects[ch.subject]) {
         subjects[ch.subject].push({
           ...ch,
@@ -80,7 +106,16 @@ export default function SyllabusView() {
     });
 
     return subjects;
-  }, [allChapters, searchTerm, selectedClass, selectedWeightage, selectedDifficulty, state.chapterDifficulty]);
+  }, [
+    allChapters,
+    searchTerm,
+    selectedClass,
+    selectedWeightage,
+    selectedDifficulty,
+    selectedStatus,
+    state.chapterDifficulty,
+    state.chapterProgress,
+  ]);
 
   const displayedSubjects =
     activeSubject === 'All'
@@ -151,11 +186,21 @@ export default function SyllabusView() {
               </div>
 
               {/* Quick Filters */}
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
+                >
+                  <option value="All">All Status</option>
+                  <option value="Active">Active (Uncompleted)</option>
+                  <option value="Mastered">Mastered (3/3)</option>
+                </select>
+
                 <select
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
+                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
                 >
                   <option value="All">All Classes</option>
                   <option value="Class 11">Class 11</option>
@@ -165,7 +210,7 @@ export default function SyllabusView() {
                 <select
                   value={selectedDifficulty}
                   onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
+                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
                 >
                   <option value="All">All Difficulties</option>
                   <option value="Easy">Easy</option>
@@ -176,13 +221,23 @@ export default function SyllabusView() {
                 <select
                   value={selectedWeightage}
                   onChange={(e) => setSelectedWeightage(e.target.value)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer"
+                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
                 >
                   <option value="All">All Yields</option>
                   <option value="High Yield">High Yield ⭐</option>
                   <option value="Moderate">Moderate</option>
                   <option value="Low">Low</option>
                 </select>
+
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition text-xs font-semibold"
+                  >
+                    <X className="w-3 h-3" />
+                    <span>Clear</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -218,6 +273,9 @@ export default function SyllabusView() {
                         revision: false,
                       };
                       const isMastered = progress.ncert && progress.pyqs && progress.revision;
+                      const completedStages = ['ncert', 'pyqs', 'revision'].filter(
+                        (s) => Boolean(progress[s])
+                      ).length;
                       const isSelectedForFocus = state.selectedChapterId === ch.id;
                       const currentDiff = ch.difficulty;
                       const diffStyle = difficultyConfig[currentDiff] || difficultyConfig.Medium;
@@ -227,36 +285,59 @@ export default function SyllabusView() {
                           key={ch.id}
                           className={`${
                             isCompact ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'
-                          } rounded-3xl bg-[#1a1d24] border border-white/5 flex flex-col justify-between transition-all duration-200 group relative ${
+                          } rounded-3xl border flex flex-col justify-between transition-all duration-200 group relative ${
                             isSelectedForFocus
-                              ? 'border-[#55e357]/40 shadow-glow-lime bg-[#1e232b]'
-                              : 'hover:border-white/10 hover:bg-[#1d212a]'
+                              ? 'border-[#55e357]/50 shadow-glow-lime bg-[#1d2328]'
+                              : isMastered
+                              ? 'bg-[#151c17] border-[#55e357]/25 hover:border-[#55e357]/40'
+                              : 'bg-[#1a1d24] border-white/5 hover:border-white/10 hover:bg-[#1d212a]'
                           }`}
                         >
                           {/* Top Card Row */}
-                          <div className="flex items-center justify-between gap-2 mb-2.5">
+                          <div className="flex items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-1.5">
                               <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#262a34] text-zinc-300">
                                 {ch.className}
                               </span>
                               {ch.weightage === 'High Yield' && (
-                                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f97316]/15 text-[#f97316] border border-[#f97316]/30">
                                   High Yield ⭐
                                 </span>
                               )}
                             </div>
 
-                            {/* Difficulty Selector */}
-                            <div className="relative">
+                            <div className="flex items-center gap-2">
+                              {/* 3-Bar Micro Checkpoint Progress */}
+                              <div
+                                className="flex items-center gap-1"
+                                title={`${completedStages}/3 checkpoints mastered`}
+                              >
+                                {[1, 2, 3].map((step) => (
+                                  <span
+                                    key={step}
+                                    className={`h-1.5 w-3 rounded-full transition-colors ${
+                                      completedStages >= step ? 'bg-[#55e357]' : 'bg-white/10'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+
+                              {/* Difficulty Selector */}
                               <select
                                 value={currentDiff}
                                 onChange={(e) => setChapterDifficulty(ch.id, e.target.value)}
                                 className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border cursor-pointer focus:outline-none bg-[#14161c] ${diffStyle.badge}`}
                                 title="Click to change chapter difficulty"
                               >
-                                <option value="Easy" className="bg-[#1a1d24] text-emerald-400">● Easy</option>
-                                <option value="Medium" className="bg-[#1a1d24] text-amber-300">● Medium</option>
-                                <option value="Hard" className="bg-[#1a1d24] text-rose-400">● Hard</option>
+                                <option value="Easy" className="bg-[#1a1d24] text-emerald-400">
+                                  ● Easy
+                                </option>
+                                <option value="Medium" className="bg-[#1a1d24] text-amber-300">
+                                  ● Medium
+                                </option>
+                                <option value="Hard" className="bg-[#1a1d24] text-rose-400">
+                                  ● Hard
+                                </option>
                               </select>
                             </div>
                           </div>
@@ -272,46 +353,72 @@ export default function SyllabusView() {
                             </button>
                           </div>
 
-                          {/* Bottom Card Controls with rounded pill checkboxes */}
+                          {/* Bottom Card Controls with tactile capsule toggles */}
                           <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2 mt-auto">
-                            <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-300">
-                              <label className="flex items-center gap-1.5 cursor-pointer hover:text-white select-none">
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(progress.ncert)}
-                                  onChange={() => toggleChapterStage(ch.id, 'ncert')}
-                                  className="w-4 h-4 rounded-md bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => toggleChapterStage(ch.id, 'ncert')}
+                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                  progress.ncert
+                                    ? 'bg-[#55e357]/20 text-[#55e357] border border-[#55e357]/40 shadow-sm'
+                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5 hover:border-white/10'
+                                }`}
+                                title="Toggle NCERT Reading"
+                              >
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    progress.ncert ? 'bg-[#55e357]' : 'bg-zinc-600'
+                                  }`}
                                 />
                                 <span>NCERT</span>
-                              </label>
+                              </button>
 
-                              <label className="flex items-center gap-1.5 cursor-pointer hover:text-white select-none">
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(progress.pyqs)}
-                                  onChange={() => toggleChapterStage(ch.id, 'pyqs')}
-                                  className="w-4 h-4 rounded-md bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
+                              <button
+                                type="button"
+                                onClick={() => toggleChapterStage(ch.id, 'pyqs')}
+                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                  progress.pyqs
+                                    ? 'bg-[#55e357]/20 text-[#55e357] border border-[#55e357]/40 shadow-sm'
+                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5 hover:border-white/10'
+                                }`}
+                                title="Toggle Previous Year Questions"
+                              >
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    progress.pyqs ? 'bg-[#55e357]' : 'bg-zinc-600'
+                                  }`}
                                 />
                                 <span>PYQs</span>
-                              </label>
+                              </button>
 
-                              <label className="flex items-center gap-1.5 cursor-pointer hover:text-white select-none">
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(progress.revision)}
-                                  onChange={() => toggleChapterStage(ch.id, 'revision')}
-                                  className="w-4 h-4 rounded-md bg-zinc-800 border-zinc-600 text-[#55e357] focus:ring-0 cursor-pointer accent-[#55e357]"
+                              <button
+                                type="button"
+                                onClick={() => toggleChapterStage(ch.id, 'revision')}
+                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                  progress.revision
+                                    ? 'bg-[#55e357]/20 text-[#55e357] border border-[#55e357]/40 shadow-sm'
+                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5 hover:border-white/10'
+                                }`}
+                                title="Toggle Multi-Stage Revision"
+                              >
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    progress.revision ? 'bg-[#55e357]' : 'bg-zinc-600'
+                                  }`}
                                 />
                                 <span>Rev</span>
-                              </label>
+                              </button>
                             </div>
 
                             {/* Quick Action buttons */}
                             <div className="flex items-center gap-1.5">
                               <button
                                 onClick={() => setSelectedChapterId(ch.id)}
-                                className={`p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 transition ${
-                                  isSelectedForFocus ? 'text-[#55e357]' : ''
+                                className={`p-1.5 rounded-full transition ${
+                                  isSelectedForFocus
+                                    ? 'text-[#55e357] bg-[#55e357]/10'
+                                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
                                 }`}
                                 title="Set as Active Focus Timer Chapter"
                               >

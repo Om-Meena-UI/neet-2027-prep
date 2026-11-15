@@ -16,9 +16,19 @@ export default function AnalyticsStrip() {
     d.setDate(today.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
     const isToday = i === 0;
-    const hasActivity = Boolean(
-      state.dailyActivity?.[dateStr]?.minutes > 0 || state.dailyActivity?.[dateStr]?.checks > 0
-    );
+    const dayActivity = state.dailyActivity?.[dateStr] || {};
+    const minutes = dayActivity.minutes || 0;
+    const checks = dayActivity.checks || 0;
+    const hasActivity = Boolean(minutes > 0 || checks > 0);
+
+    let activityLabel = '';
+    if (minutes >= 60) {
+      activityLabel = `${(minutes / 60).toFixed(1)}h`;
+    } else if (minutes > 0) {
+      activityLabel = `${minutes}m`;
+    } else if (checks > 0) {
+      activityLabel = `${checks}ch`;
+    }
 
     weekDays.push({
       dateStr,
@@ -26,6 +36,7 @@ export default function AnalyticsStrip() {
       dayName: daysOfWeek[d.getDay()],
       isToday,
       hasActivity,
+      activityLabel,
     });
   }
 
@@ -64,7 +75,7 @@ export default function AnalyticsStrip() {
             {weekDays.map((d) => (
               <div
                 key={d.dateStr}
-                className={`flex flex-col items-center justify-center w-11 h-14 rounded-2xl border transition-all ${
+                className={`flex flex-col items-center justify-center w-12 h-14 rounded-2xl border transition-all ${
                   d.isToday
                     ? 'bg-[#55e357] text-black border-[#55e357] font-bold shadow-glow-lime'
                     : d.hasActivity
@@ -74,8 +85,16 @@ export default function AnalyticsStrip() {
               >
                 <span className="text-[10px] uppercase font-semibold leading-none">{d.dayName}</span>
                 <span className="text-sm font-black font-mono mt-1 leading-none">{d.dayNum}</span>
-                {d.hasActivity && !d.isToday && (
-                  <span className="w-1 h-1 rounded-full bg-[#55e357] mt-1" />
+                {d.activityLabel ? (
+                  <span
+                    className={`text-[9px] font-mono font-bold leading-none mt-1 ${
+                      d.isToday ? 'text-black/80' : 'text-[#55e357]'
+                    }`}
+                  >
+                    {d.activityLabel}
+                  </span>
+                ) : (
+                  <span className="w-1 h-1 rounded-full bg-transparent mt-1" />
                 )}
               </div>
             ))}
@@ -88,16 +107,16 @@ export default function AnalyticsStrip() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
           {/* Overall Readiness Metric */}
           <div className="md:col-span-5 flex flex-col justify-center">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#55e357] animate-ping" />
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#55e357]">
-                NEET 2027 Mastery
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#55e357]" />
+              <span className="text-xs font-bold text-zinc-300">
+                {state.settings?.dreamCollege || 'AIIMS New Delhi'} • Target {state.settings?.targetScore || 700}+
               </span>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
               Syllabus Roadmap
-            </h2>
+            </h1>
 
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-4xl sm:text-5xl font-mono font-black text-white">

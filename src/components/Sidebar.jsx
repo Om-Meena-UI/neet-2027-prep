@@ -100,18 +100,31 @@ export default function Sidebar() {
                       {ch.title}
                     </button>
 
-                    <div className="text-[10px] text-zinc-400 mt-1 flex items-center gap-2 font-mono">
-                      <span>{doneCount}/3 stages completed</span>
+                    <div className="text-[10px] text-zinc-400 mt-1.5 flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3].map((step) => (
+                          <span
+                            key={step}
+                            className={`h-1 w-2.5 rounded-full ${
+                              doneCount >= step ? 'bg-[#55e357]' : 'bg-white/10'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-mono text-zinc-400">{doneCount}/3 stages</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
-                      onClick={() => setSelectedChapterId(ch.id)}
+                      onClick={() => {
+                        setSelectedChapterId(ch.id);
+                        document.getElementById('mobile-timer-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
                       className="p-2 rounded-xl bg-[#262a34] text-zinc-400 hover:text-white hover:bg-[#323744] transition"
                       title="Set active in Focus Timer"
                     >
-                      <Target className="w-3.5 h-3.5" />
+                      <Target className="w-3.5 h-3.5 text-[#55e357]" />
                     </button>
 
                     <button
