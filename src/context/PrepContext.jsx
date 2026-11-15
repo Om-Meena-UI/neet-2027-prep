@@ -456,12 +456,21 @@ export function PrepProvider({ children }) {
       await saveUserStateToCloud(user.uid, state);
       setLastSyncTime(new Date());
       showToast('☁️ Progress safely synced to Cloud!');
-      setIsSyncing(false);
       return true;
     } catch (err) {
-      setIsSyncing(false);
-      showToast('Cloud sync failed: ' + (err.message || 'Network error'), 'error');
+      console.error('syncToCloud error:', err);
+      const isPermissionOrMissing =
+        err.message?.includes('timed out') ||
+        err.code === 'permission-denied' ||
+        err.message?.includes('permission');
+      if (isPermissionOrMissing) {
+        showToast('Firestore database not initialized or locked in Firebase console.', 'error');
+      } else {
+        showToast('Cloud sync failed: ' + (err.message || 'Network error'), 'error');
+      }
       return false;
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -489,12 +498,13 @@ export function PrepProvider({ children }) {
         await saveUserStateToCloud(user.uid, state);
         setLastSyncTime(new Date());
       }
-      setIsSyncing(false);
       return true;
     } catch (err) {
-      setIsSyncing(false);
+      console.error('loadFromCloud error:', err);
       showToast('Failed to pull from cloud: ' + err.message, 'error');
       return false;
+    } finally {
+      setIsSyncing(false);
     }
   };
 

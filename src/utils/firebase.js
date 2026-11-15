@@ -54,6 +54,21 @@ export const logoutFirebase = () => {
   return signOut(auth);
 };
 
+// Safe promise wrapper with timeout to prevent hanging on uninitialized Firestore or locked security rules
+const withTimeout = (promise, ms = 7000, errorMsg = 'Firestore timed out. Please ensure Cloud Firestore Database is created and rules are open in your Firebase Console.') => {
+  let timer;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(errorMsg)), ms);
+  });
+  return Promise.race([
+    promise.then((res) => {
+      clearTimeout(timer);
+      return res;
+    }),
+    timeoutPromise,
+  ]);
+};
+
 // Cloud Firestore Sync Helpers
 export const saveUserStateToCloud = async (uid, state) => {
   if (!uid) return false;
@@ -72,7 +87,7 @@ export const saveUserStateToCloud = async (uid, state) => {
       selectedChapterId: state.selectedChapterId || '',
       updatedAt: serverTimestamp(),
     };
-    await setDoc(userDocRef, statePayload, { merge: true });
+    await withTimeout(setDoc(userDocRef, statePayload, { merge: true }), 7000);
     return true;
   } catch (err) {
     console.error('Firestore saveUserStateToCloud error:', err);
@@ -84,7 +99,7 @@ export const loadUserStateFromCloud = async (uid) => {
   if (!uid) return null;
   try {
     const userDocRef = doc(db, 'users', uid);
-    const docSnap = await getDoc(userDocRef);
+    const docSnap = await withTimeout(getDoc(userDocRef), 7000);
     if (docSnap.exists()) {
       return docSnap.data();
     }
