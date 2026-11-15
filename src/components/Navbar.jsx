@@ -41,8 +41,8 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
         <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-sleek">
           {/* Logo badge */}
           <div className="flex items-center gap-2 pr-1.5 sm:pr-2 border-r border-white/10">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#13151a] to-[#262a34] flex items-center justify-center border border-white/10 overflow-hidden shadow-inner">
-              <img src="/favicon.ico" alt="NEET 2027" className="w-4.5 h-4.5 object-contain" />
+            <div className="w-7 h-7 rounded-xl bg-black flex items-center justify-center border border-white/10 overflow-hidden shadow-inner">
+              <img src="/logo.png" alt="NEET 2027" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-xs sm:text-sm tracking-tight text-white hidden sm:inline">
               NEET<span className="text-[#55e357]">27</span>
