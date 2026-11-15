@@ -34,6 +34,12 @@ export default function Heatmap() {
     return 'color-scale-4';
   };
 
+  const getTitleForValue = (value) => {
+    if (!value || !value.date) return 'No study recorded';
+    const hrs = (value.minutes / 60).toFixed(1);
+    return `${value.date}: ${value.minutes} mins (${hrs} hrs) study • ${value.checks} checks`;
+  };
+
   return (
     <div className="space-y-4">
       {/* 4 Stat Badges styled in soft rounded cards */}
@@ -95,22 +101,62 @@ export default function Heatmap() {
             endDate={today}
             values={heatmapValues}
             classForValue={getClassForValue}
+            titleForValue={getTitleForValue}
             showWeekdayLabels
           />
         </div>
       </div>
 
-      {/* Sleek Legend with rounded pill badges */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-400 px-2">
-        <span>Less consistent</span>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-md bg-[#181b22] inline-block border border-white/5" />
-          <span className="w-3 h-3 rounded-md bg-[#1f4727] inline-block" />
-          <span className="w-3 h-3 rounded-md bg-[#277735] inline-block" />
-          <span className="w-3 h-3 rounded-md bg-[#39b54a] inline-block" />
-          <span className="w-3 h-3 rounded-md bg-[#55e357] inline-block shadow-glow-lime" />
+      {/* Detailed Study Hours Color Scale Legend */}
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-[#14161c] border border-white/5 space-y-2.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-bold text-white uppercase tracking-wider text-[10px]">
+            Study Hours Color Scale
+          </span>
+          <span className="text-[11px] text-zinc-400">Hover over any square for exact hours & checks</span>
         </div>
-        <span className="text-[#55e357] font-semibold">High focus (3h+)</span>
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+            <span className="w-3.5 h-3.5 rounded-md bg-[#181b22] border border-white/10 flex-shrink-0" />
+            <div>
+              <div className="text-[11px] font-bold text-zinc-300">0 Hours</div>
+              <div className="text-[9px] text-zinc-500">Rest / No log</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+            <span className="w-3.5 h-3.5 rounded-md bg-[#1f4727] flex-shrink-0" />
+            <div>
+              <div className="text-[11px] font-bold text-emerald-400">&lt; 30 Mins</div>
+              <div className="text-[9px] text-zinc-400">Quick review</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+            <span className="w-3.5 h-3.5 rounded-md bg-[#277735] flex-shrink-0" />
+            <div>
+              <div className="text-[11px] font-bold text-emerald-300">30m – 1.5h</div>
+              <div className="text-[9px] text-zinc-400">1–2 Pomodoros</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+            <span className="w-3.5 h-3.5 rounded-md bg-[#39b54a] flex-shrink-0" />
+            <div>
+              <div className="text-[11px] font-bold text-[#55e357]">1.5h – 3h</div>
+              <div className="text-[9px] text-zinc-400">Deep study block</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-[#55e357]/20 shadow-glow-lime">
+            <span className="w-3.5 h-3.5 rounded-md bg-[#55e357] shadow-sm flex-shrink-0" />
+            <div>
+              <div className="text-[11px] font-bold text-[#55e357]">3+ Hours</div>
+              <div className="text-[9px] text-zinc-300 font-medium">NEET Marathon</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
