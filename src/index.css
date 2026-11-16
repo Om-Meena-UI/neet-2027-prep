@@ -66,14 +66,19 @@
 }
 
 /* Modern Rounded Squares for Tracker / Heatmap Cells */
+.react-calendar-heatmap {
+  width: 100%;
+  height: auto;
+}
+
 .react-calendar-heatmap text {
   font-size: 8px;
   fill: #64748b;
 }
 
 .react-calendar-heatmap rect {
-  rx: 3px !important;
-  ry: 3px !important;
+  rx: 2.5px !important;
+  ry: 2.5px !important;
   transition: all 0.15s ease-in-out;
 }
 

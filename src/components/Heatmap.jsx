@@ -15,6 +15,9 @@ export default function Heatmap() {
   // Selected day for interactive mobile tap inspection
   const [selectedDay, setSelectedDay] = useState(null);
 
+  // Mobile mode: 'fit' shows the entire 365 days on screen at once; 'scroll' enables zoomed horizontal scrolling
+  const [mobileMode, setMobileMode] = useState('fit');
+
   const today = useMemo(() => new Date(), []);
 
   // Standard 365-day (1 year) range with compact, sleek GitHub-style cells
@@ -161,17 +164,49 @@ export default function Heatmap() {
               Study Consistency Map
             </span>
           </div>
-          <span className="text-[10px] font-mono text-zinc-400">
+
+          {/* Mobile Display Mode Pill: Fit Screen (100% of year visible) vs Zoom Scroll */}
+          <div className="sm:hidden flex items-center bg-[#1a1d24] p-0.5 rounded-xl border border-white/5 text-[10px] font-bold">
+            <button
+              type="button"
+              onClick={() => setMobileMode('fit')}
+              className={`px-2.5 py-1 rounded-lg transition-all active:scale-95 ${
+                mobileMode === 'fit'
+                  ? 'bg-[#55e357] text-black shadow-glow-lime'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Fit Screen
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMode('scroll');
+                setTimeout(() => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+                  }
+                }, 50);
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all active:scale-95 ${
+                mobileMode === 'scroll'
+                  ? 'bg-[#55e357] text-black shadow-glow-lime'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Zoom Scroll
+            </button>
+          </div>
+
+          <span className="text-[10px] font-mono text-zinc-400 hidden sm:inline">
             Today is on the right 👉
           </span>
         </div>
 
-        {/* Heatmap Grid in rounded scrollable container (min-width ensures classic compact cell sizes) */}
-        <div
-          ref={scrollContainerRef}
-          className="overflow-x-auto no-scrollbar scroll-smooth py-1"
-        >
-          <div className="min-w-[700px]">
+        {/* Heatmap Rendering */}
+        {mobileMode === 'fit' ? (
+          /* FIT SCREEN MODE: Fits the ENTIRE 365-day year on the mobile screen at once with zero horizontal scrolling */
+          <div className="w-full py-1">
             <CalendarHeatmap
               startDate={startDate}
               endDate={today}
@@ -179,15 +214,42 @@ export default function Heatmap() {
               classForValue={getClassForValue}
               titleForValue={getTitleForValue}
               onClick={handleCellClick}
-              showWeekdayLabels
+              showWeekdayLabels={false}
             />
           </div>
-        </div>
+        ) : (
+          /* ZOOM SCROLL MODE: Scrollable detailed view with auto-scroll to today */
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto no-scrollbar scroll-smooth py-1"
+          >
+            <div className="min-w-[680px]">
+              <CalendarHeatmap
+                startDate={startDate}
+                endDate={today}
+                values={heatmapValues}
+                classForValue={getClassForValue}
+                titleForValue={getTitleForValue}
+                onClick={handleCellClick}
+                showWeekdayLabels
+              />
+            </div>
+          </div>
+        )}
 
-        {/* Mobile Swipe Cue */}
-        <div className="sm:hidden flex items-center justify-between text-[10px] text-zinc-500 px-1 pt-1">
-          <span>👈 Swipe to view earlier months</span>
-          <span className="font-mono text-[#55e357]">Today is at right 👉</span>
+        {/* Context Cue for Mobile */}
+        <div className="sm:hidden flex items-center justify-between text-[10px] text-zinc-400 px-1 pt-0.5">
+          {mobileMode === 'fit' ? (
+            <>
+              <span className="text-[#55e357]">● Whole 365 days on screen</span>
+              <span>Tap square to inspect 👆</span>
+            </>
+          ) : (
+            <>
+              <span>👈 Swipe to view earlier months</span>
+              <span className="font-mono text-[#55e357]">Today is on the right 👉</span>
+            </>
+          )}
         </div>
 
         {/* Interactive Tap-to-Inspect Card for Mobile Users */}
