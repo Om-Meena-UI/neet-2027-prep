@@ -1,22 +1,55 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { Flame, Award, Clock, CheckCircle2, Sparkles } from 'lucide-react';
+import { Flame, Award, Clock, CheckCircle2, Sparkles, Calendar, ChevronRight, X } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
 export default function Heatmap() {
   const { state, consistency } = usePrep();
+  const scrollContainerRef = useRef(null);
 
   const dailyHoursGoal = state.settings?.dailyHoursGoal || 8;
   const targetMinutes = dailyHoursGoal * 60;
   const isTodayTargetExceeded = (consistency.todayMinutes || 0) >= targetMinutes && targetMinutes > 0;
 
+  // Selected day for interactive mobile tap inspection
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  // Time range: On mobile screens (<640px), default to 3M so heatmap is 100% visible without horizontal scroll.
+  const [timeRange, setTimeRange] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      return '3M';
+    }
+    return '1Y';
+  });
+
   const today = useMemo(() => new Date(), []);
-  const oneYearAgo = useMemo(() => {
+
+  const startDate = useMemo(() => {
     const d = new Date();
-    d.setFullYear(d.getFullYear() - 1);
+    if (timeRange === '1M') {
+      d.setDate(d.getDate() - 30);
+    } else if (timeRange === '3M') {
+      d.setDate(d.getDate() - 90);
+    } else if (timeRange === '6M') {
+      d.setDate(d.getDate() - 180);
+    } else {
+      // '1Y' full year
+      d.setFullYear(d.getFullYear() - 1);
+    }
     return d;
-  }, []);
+  }, [timeRange]);
+
+  // Auto-scroll to today (far right) whenever range changes or on mount
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      // Scroll to the end where today is located
+      setTimeout(() => {
+        el.scrollLeft = el.scrollWidth;
+      }, 50);
+    }
+  }, [timeRange]);
 
   const heatmapValues = useMemo(() => {
     return Object.entries(state.dailyActivity || {}).map(([date, data]) => {
@@ -54,6 +87,23 @@ export default function Heatmap() {
     return `${value.date}: ${value.minutes} mins (${hrs} hrs) study • ${value.checks} checks`;
   };
 
+  const handleCellClick = (val) => {
+    if (val && val.date) {
+      setSelectedDay(val);
+    } else {
+      setSelectedDay(null);
+    }
+  };
+
+  const minWidthClass =
+    timeRange === '1M'
+      ? 'w-full'
+      : timeRange === '3M'
+      ? 'w-full min-w-0 sm:min-w-[340px]'
+      : timeRange === '6M'
+      ? 'min-w-[480px]'
+      : 'min-w-[650px]';
+
   return (
     <div className="space-y-4">
       {/* 4 Stat Badges styled in soft rounded cards */}
@@ -62,11 +112,11 @@ export default function Heatmap() {
           <div className="w-9 h-9 rounded-full bg-[#f97316]/10 text-[#f97316] flex items-center justify-center flex-shrink-0">
             <Flame className="w-4 h-4" />
           </div>
-          <div>
-            <div className="text-lg font-bold font-mono text-white leading-tight">
+          <div className="min-w-0">
+            <div className="text-lg font-bold font-mono text-white leading-tight truncate">
               {consistency.currentStreak} <span className="text-[10px] font-sans font-normal text-zinc-400">days</span>
             </div>
-            <div className="text-[10px] font-medium text-zinc-400">Current Streak</div>
+            <div className="text-[10px] font-medium text-zinc-400 truncate">Current Streak</div>
           </div>
         </div>
 
@@ -74,11 +124,11 @@ export default function Heatmap() {
           <div className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
             <Award className="w-4 h-4" />
           </div>
-          <div>
-            <div className="text-lg font-bold font-mono text-white leading-tight">
+          <div className="min-w-0">
+            <div className="text-lg font-bold font-mono text-white leading-tight truncate">
               {consistency.bestStreak} <span className="text-[10px] font-sans font-normal text-zinc-400">days</span>
             </div>
-            <div className="text-[10px] font-medium text-zinc-400">Best Streak</div>
+            <div className="text-[10px] font-medium text-zinc-400 truncate">Best Streak</div>
           </div>
         </div>
 
@@ -98,18 +148,18 @@ export default function Heatmap() {
           >
             {isTodayTargetExceeded ? <Sparkles className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
           </div>
-          <div>
-            <div className="text-lg font-bold font-mono text-white leading-tight flex items-center gap-1.5">
+          <div className="min-w-0">
+            <div className="text-lg font-bold font-mono text-white leading-tight flex items-center gap-1.5 truncate">
               <span>{consistency.todayMinutes}</span>
               <span className="text-[10px] font-sans font-normal text-zinc-400">mins</span>
               {isTodayTargetExceeded && (
-                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-amber-400 text-black">
+                <span className="text-[8px] font-black uppercase px-1 py-0.5 rounded bg-amber-400 text-black hidden sm:inline">
                   Goal Met! 🏆
                 </span>
               )}
             </div>
-            <div className="text-[10px] font-medium text-zinc-400">
-              Today's Focus ({dailyHoursGoal}h target)
+            <div className="text-[10px] font-medium text-zinc-400 truncate">
+              Today ({dailyHoursGoal}h goal)
             </div>
           </div>
         </div>
@@ -118,90 +168,181 @@ export default function Heatmap() {
           <div className="w-9 h-9 rounded-full bg-sky-500/10 text-sky-400 flex items-center justify-center flex-shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
-          <div>
-            <div className="text-lg font-bold font-mono text-white leading-tight">
+          <div className="min-w-0">
+            <div className="text-lg font-bold font-mono text-white leading-tight truncate">
               {consistency.todayChecks} <span className="text-[10px] font-sans font-normal text-zinc-400">done</span>
             </div>
-            <div className="text-[10px] font-medium text-zinc-400">Checks Today</div>
+            <div className="text-[10px] font-medium text-zinc-400 truncate">Checks Today</div>
           </div>
         </div>
       </div>
 
-      {/* Heatmap Grid in rounded container */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-[#14161c] border border-white/5 overflow-x-auto">
-        <div className="min-w-[650px]">
-          <CalendarHeatmap
-            startDate={oneYearAgo}
-            endDate={today}
-            values={heatmapValues}
-            classForValue={getClassForValue}
-            titleForValue={getTitleForValue}
-            showWeekdayLabels
-          />
+      {/* Heatmap Card with Time Range Controls */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-[#14161c] border border-white/5 space-y-3">
+        {/* Top Bar inside Heatmap: Title & Adaptive Time Range Pills */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-white/5">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-[#55e357]" />
+            <span className="text-xs font-bold text-white tracking-wide uppercase">
+              Study Consistency Map
+            </span>
+            <span className="text-[10px] text-zinc-500 hidden sm:inline">
+              (Today is on the right)
+            </span>
+          </div>
+
+          {/* Time Range Selector (1M, 3M, 6M, 1Y) */}
+          <div className="flex items-center gap-1 bg-[#1a1d24] p-1 rounded-2xl border border-white/5 self-start sm:self-auto">
+            {[
+              { id: '1M', label: '1 Month' },
+              { id: '3M', label: '3 Months' },
+              { id: '6M', label: '6 Months' },
+              { id: '1Y', label: '1 Year' },
+            ].map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setTimeRange(r.id)}
+                className={`px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold transition-all active:scale-95 ${
+                  timeRange === r.id
+                    ? 'bg-[#55e357] text-black shadow-glow-lime'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Heatmap Grid in rounded scrollable container */}
+        <div
+          ref={scrollContainerRef}
+          className="overflow-x-auto no-scrollbar scroll-smooth py-1"
+        >
+          <div className={minWidthClass}>
+            <CalendarHeatmap
+              startDate={startDate}
+              endDate={today}
+              values={heatmapValues}
+              classForValue={getClassForValue}
+              titleForValue={getTitleForValue}
+              onClick={handleCellClick}
+              showWeekdayLabels
+            />
+          </div>
+        </div>
+
+        {/* Mobile Swipe Cue for 6M/1Y Views */}
+        {(timeRange === '6M' || timeRange === '1Y') && (
+          <div className="sm:hidden flex items-center justify-between text-[10px] text-zinc-500 px-1 pt-1">
+            <span>👈 Swipe to view earlier dates</span>
+            <span className="font-mono text-[#55e357]">Today is at right 👉</span>
+          </div>
+        )}
+
+        {/* Interactive Tap-to-Inspect Card for Mobile Users */}
+        {selectedDay && (
+          <div className="p-3 rounded-2xl bg-[#191d24] border border-white/10 flex items-center justify-between gap-3 animate-in fade-in duration-150">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={`w-3 h-3 rounded-md flex-shrink-0 ${
+                  selectedDay.exceededTarget
+                    ? 'bg-[#fbbf24] shadow-[0_0_8px_rgba(251,191,36,0.8)]'
+                    : selectedDay.minutes > 0
+                    ? 'bg-[#55e357]'
+                    : 'bg-[#181b22] border border-white/10'
+                }`}
+              />
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white flex items-center gap-1.5 truncate">
+                  <span>{selectedDay.date}</span>
+                  {selectedDay.exceededTarget && (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-400 text-black font-black uppercase">
+                      Target Exceeded ⭐
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-zinc-400 font-mono truncate">
+                  {selectedDay.minutes > 0
+                    ? `${selectedDay.minutes}m (${(selectedDay.minutes / 60).toFixed(1)}h) focus • ${selectedDay.checks || 0} checks completed`
+                    : 'No study logged on this day'}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedDay(null)}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition flex-shrink-0"
+              title="Close inspection"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Detailed Study Hours Color Scale Legend */}
+      {/* Detailed Study Hours Color Scale Legend (Horizontally scrollable on mobile) */}
       <div className="p-3.5 sm:p-4 rounded-2xl bg-[#14161c] border border-white/5 space-y-2.5">
         <div className="flex items-center justify-between text-xs">
           <span className="font-bold text-white uppercase tracking-wider text-[10px]">
             Study Hours Color Scale
           </span>
           <span className="text-[11px] text-zinc-400">
-            Target: <span className="font-bold text-amber-400">{dailyHoursGoal}h / day</span> (configured in Settings)
+            Target: <span className="font-bold text-amber-400">{dailyHoursGoal}h / day</span>
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+        {/* Horizontal swipeable bar on mobile, 6-col grid on desktop */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:grid sm:grid-cols-3 lg:grid-cols-6 pt-1">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5 flex-shrink-0 sm:flex-shrink">
             <span className="w-3.5 h-3.5 rounded-md bg-[#181b22] border border-white/10 flex-shrink-0" />
-            <div>
+            <div className="whitespace-nowrap sm:whitespace-normal">
               <div className="text-[11px] font-bold text-zinc-300">0 Hours</div>
               <div className="text-[9px] text-zinc-500">Rest / No log</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5 flex-shrink-0 sm:flex-shrink">
             <span className="w-3.5 h-3.5 rounded-md bg-[#1f4727] flex-shrink-0" />
-            <div>
+            <div className="whitespace-nowrap sm:whitespace-normal">
               <div className="text-[11px] font-bold text-emerald-400">&lt; 30 Mins</div>
               <div className="text-[9px] text-zinc-400">Quick review</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5 flex-shrink-0 sm:flex-shrink">
             <span className="w-3.5 h-3.5 rounded-md bg-[#277735] flex-shrink-0" />
-            <div>
+            <div className="whitespace-nowrap sm:whitespace-normal">
               <div className="text-[11px] font-bold text-emerald-300">30m – 1.5h</div>
               <div className="text-[9px] text-zinc-400">1–2 Pomodoros</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5 flex-shrink-0 sm:flex-shrink">
             <span className="w-3.5 h-3.5 rounded-md bg-[#39b54a] flex-shrink-0" />
-            <div>
+            <div className="whitespace-nowrap sm:whitespace-normal">
               <div className="text-[11px] font-bold text-[#55e357]">1.5h – 3h</div>
-              <div className="text-[9px] text-zinc-400">Deep study block</div>
+              <div className="text-[9px] text-zinc-400">Deep block</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-[#55e357]/20">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-[#55e357]/20 flex-shrink-0 sm:flex-shrink">
             <span className="w-3.5 h-3.5 rounded-md bg-[#55e357] shadow-sm flex-shrink-0" />
-            <div>
+            <div className="whitespace-nowrap sm:whitespace-normal">
               <div className="text-[11px] font-bold text-[#55e357]">3+ Hours</div>
-              <div className="text-[9px] text-zinc-400">NEET Marathon</div>
+              <div className="text-[9px] text-zinc-400">Marathon</div>
             </div>
           </div>
 
           {/* Golden Tier: Target Met / Exceeded */}
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1e1c15] border border-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.18)]">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1e1c15] border border-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.18)] flex-shrink-0 sm:flex-shrink">
             <span className="w-3.5 h-3.5 rounded-md bg-[#fbbf24] border border-amber-300 shadow-[0_0_6px_rgba(251,191,36,0.7)] flex-shrink-0" />
-            <div>
+            <div className="whitespace-nowrap sm:whitespace-normal">
               <div className="text-[11px] font-black text-amber-400 flex items-center gap-1">
                 <span>{dailyHoursGoal}+ Hours</span>
                 <span className="text-[10px]">⭐</span>
               </div>
-              <div className="text-[9px] text-amber-300/80 font-medium">Target Exceeded</div>
+              <div className="text-[9px] text-amber-300/80 font-medium">Goal Exceeded</div>
             </div>
           </div>
         </div>
