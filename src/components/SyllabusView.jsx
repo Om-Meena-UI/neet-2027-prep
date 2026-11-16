@@ -211,7 +211,7 @@ export default function SyllabusView() {
       </div>
 
       {/* Main Grid: 2 columns on desktop (lg:grid-cols-12), stacked / sectioned on mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Chapters by Subject (Always shown on desktop; shown on mobile if mobileSection === 'chapters') */}
         <section
           className={`space-y-6 ${
@@ -596,8 +596,10 @@ export default function SyllabusView() {
         )}
 
         {/* DESKTOP SIDEBAR: Persistent & sticky on the right side even after scrolling past */}
-        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto pr-1.5 space-y-5">
-          <Sidebar />
+        <div className="hidden lg:block lg:col-span-4 relative">
+          <div className="sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar space-y-5 pb-6">
+            <Sidebar />
+          </div>
         </div>
       </div>
     </div>

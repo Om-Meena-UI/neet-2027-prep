@@ -15,7 +15,6 @@
     overscroll-behavior: none;
     overscroll-behavior-x: none;
     overscroll-behavior-y: none;
-    overflow-x: clip;
     width: 100%;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
@@ -25,7 +24,6 @@
     overscroll-behavior: none;
     overscroll-behavior-x: none;
     overscroll-behavior-y: none;
-    overflow-x: clip;
     width: 100%;
     min-height: 100%;
     @apply bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black;
@@ -34,7 +32,6 @@
     background-color: #0e1013 !important;
     min-height: 100%;
     width: 100%;
-    overflow-x: clip;
   }
 }
 

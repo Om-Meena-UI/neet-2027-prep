@@ -15,41 +15,24 @@ export default function Heatmap() {
   // Selected day for interactive mobile tap inspection
   const [selectedDay, setSelectedDay] = useState(null);
 
-  // Time range: On mobile screens (<640px), default to 3M so heatmap is 100% visible without horizontal scroll.
-  const [timeRange, setTimeRange] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 640) {
-      return '3M';
-    }
-    return '1Y';
-  });
-
   const today = useMemo(() => new Date(), []);
 
+  // Standard 365-day (1 year) range with compact, sleek GitHub-style cells
   const startDate = useMemo(() => {
     const d = new Date();
-    if (timeRange === '1M') {
-      d.setDate(d.getDate() - 30);
-    } else if (timeRange === '3M') {
-      d.setDate(d.getDate() - 90);
-    } else if (timeRange === '6M') {
-      d.setDate(d.getDate() - 180);
-    } else {
-      // '1Y' full year
-      d.setFullYear(d.getFullYear() - 1);
-    }
+    d.setFullYear(d.getFullYear() - 1);
     return d;
-  }, [timeRange]);
+  }, []);
 
-  // Auto-scroll to today (far right) whenever range changes or on mount
+  // Auto-scroll to today (far right) on mount so recent activity is instantly in view on mobile
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (el) {
-      // Scroll to the end where today is located
       setTimeout(() => {
         el.scrollLeft = el.scrollWidth;
       }, 50);
     }
-  }, [timeRange]);
+  }, []);
 
   const heatmapValues = useMemo(() => {
     return Object.entries(state.dailyActivity || {}).map(([date, data]) => {
@@ -94,15 +77,6 @@ export default function Heatmap() {
       setSelectedDay(null);
     }
   };
-
-  const minWidthClass =
-    timeRange === '1M'
-      ? 'w-full'
-      : timeRange === '3M'
-      ? 'w-full min-w-0 sm:min-w-[340px]'
-      : timeRange === '6M'
-      ? 'min-w-[480px]'
-      : 'min-w-[650px]';
 
   return (
     <div className="space-y-4">
@@ -177,49 +151,27 @@ export default function Heatmap() {
         </div>
       </div>
 
-      {/* Heatmap Card with Time Range Controls */}
+      {/* Heatmap Card */}
       <div className="p-4 sm:p-5 rounded-3xl bg-[#14161c] border border-white/5 space-y-3">
-        {/* Top Bar inside Heatmap: Title & Adaptive Time Range Pills */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-white/5">
+        {/* Top Bar inside Heatmap */}
+        <div className="flex items-center justify-between pb-1 border-b border-white/5">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-[#55e357]" />
             <span className="text-xs font-bold text-white tracking-wide uppercase">
               Study Consistency Map
             </span>
-            <span className="text-[10px] text-zinc-500 hidden sm:inline">
-              (Today is on the right)
-            </span>
           </div>
-
-          {/* Time Range Selector (1M, 3M, 6M, 1Y) */}
-          <div className="flex items-center gap-1 bg-[#1a1d24] p-1 rounded-2xl border border-white/5 self-start sm:self-auto">
-            {[
-              { id: '1M', label: '1 Month' },
-              { id: '3M', label: '3 Months' },
-              { id: '6M', label: '6 Months' },
-              { id: '1Y', label: '1 Year' },
-            ].map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setTimeRange(r.id)}
-                className={`px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold transition-all active:scale-95 ${
-                  timeRange === r.id
-                    ? 'bg-[#55e357] text-black shadow-glow-lime'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
+          <span className="text-[10px] font-mono text-zinc-400">
+            Today is on the right 👉
+          </span>
         </div>
 
-        {/* Heatmap Grid in rounded scrollable container */}
+        {/* Heatmap Grid in rounded scrollable container (min-width ensures classic compact cell sizes) */}
         <div
           ref={scrollContainerRef}
           className="overflow-x-auto no-scrollbar scroll-smooth py-1"
         >
-          <div className={minWidthClass}>
+          <div className="min-w-[700px]">
             <CalendarHeatmap
               startDate={startDate}
               endDate={today}
@@ -232,13 +184,11 @@ export default function Heatmap() {
           </div>
         </div>
 
-        {/* Mobile Swipe Cue for 6M/1Y Views */}
-        {(timeRange === '6M' || timeRange === '1Y') && (
-          <div className="sm:hidden flex items-center justify-between text-[10px] text-zinc-500 px-1 pt-1">
-            <span>👈 Swipe to view earlier dates</span>
-            <span className="font-mono text-[#55e357]">Today is at right 👉</span>
-          </div>
-        )}
+        {/* Mobile Swipe Cue */}
+        <div className="sm:hidden flex items-center justify-between text-[10px] text-zinc-500 px-1 pt-1">
+          <span>👈 Swipe to view earlier months</span>
+          <span className="font-mono text-[#55e357]">Today is at right 👉</span>
+        </div>
 
         {/* Interactive Tap-to-Inspect Card for Mobile Users */}
         {selectedDay && (
