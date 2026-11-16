@@ -595,8 +595,8 @@ export default function SyllabusView() {
           </div>
         )}
 
-        {/* DESKTOP SIDEBAR: Completely untouched 2-column layout (Hidden on mobile to avoid duplication) */}
-        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+        {/* DESKTOP SIDEBAR: Persistent & sticky on the right side even after scrolling past */}
+        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto pr-1.5 space-y-5">
           <Sidebar />
         </div>
       </div>

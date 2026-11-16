@@ -129,29 +129,29 @@ export function SmartFocusQueue() {
 
 export default function Sidebar() {
   return (
-    <aside className="space-y-6">
-      {/* YouTube Music Widget */}
-      <div id="mobile-music-section">
-        <YoutubeMusicEmbed />
-      </div>
-
-      {/* Daily To-Do List Widget */}
-      <div id="mobile-todo-section">
-        <TodoList />
-      </div>
-
-      {/* Dual-Mode Focus Timer */}
+    <aside className="space-y-5">
+      {/* 1. Dual-Mode Study Focus Timer */}
       <div id="mobile-timer-section">
         <DualTimer />
       </div>
 
-      {/* Countdown Card */}
+      {/* 2. Daily To-Do List Widget */}
+      <div id="mobile-todo-section">
+        <TodoList />
+      </div>
+
+      {/* 3. YouTube Music Widget */}
+      <div id="mobile-music-section">
+        <YoutubeMusicEmbed />
+      </div>
+
+      {/* 4. Smart Focus Queue */}
+      <SmartFocusQueue />
+
+      {/* 5. Target Exam Countdown */}
       <div id="mobile-countdown-section">
         <CountdownCard />
       </div>
-
-      {/* Smart Focus Queue */}
-      <SmartFocusQueue />
     </aside>
   );
 }
