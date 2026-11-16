@@ -252,6 +252,8 @@ export function PrepProvider({ children }) {
     [state.dailyActivity]
   );
 
+  const [mobileSection, setMobileSection] = useState('chapters'); // 'chapters' | 'timer' | 'tasks'
+
   const setActiveTab = (tab) => {
     setState((prev) => ({ ...prev, activeTab: tab }));
   };
@@ -592,6 +594,8 @@ export function PrepProvider({ children }) {
     toast,
     showToast,
     setActiveTab,
+    mobileSection,
+    setMobileSection,
     toggleChapterStage,
     toggleChapterAll,
     setChapterDifficulty,

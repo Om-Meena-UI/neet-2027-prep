@@ -416,7 +416,7 @@ export default function DualTimer() {
         <div className="grid grid-cols-4 bg-[#14161c] p-1 rounded-2xl border border-white/5 text-[11px] font-semibold text-center">
           <button
             onClick={() => handleModeChange('pomodoro')}
-            className={`py-1.5 rounded-xl transition-all ${
+            className={`py-2 sm:py-1.5 min-h-[42px] sm:min-h-0 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
               mode === 'pomodoro'
                 ? 'bg-[#262a34] text-[#55e357] shadow-inner font-bold border border-white/10'
                 : 'text-zinc-400 hover:text-white'
@@ -427,7 +427,7 @@ export default function DualTimer() {
 
           <button
             onClick={() => handleModeChange('chapter')}
-            className={`py-1.5 rounded-xl transition-all ${
+            className={`py-2 sm:py-1.5 min-h-[42px] sm:min-h-0 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
               mode === 'chapter'
                 ? 'bg-[#262a34] text-[#38bdf8] shadow-inner font-bold border border-white/10'
                 : 'text-zinc-400 hover:text-white'
@@ -438,7 +438,7 @@ export default function DualTimer() {
 
           <button
             onClick={() => handleModeChange('marathon')}
-            className={`py-1.5 rounded-xl transition-all ${
+            className={`py-2 sm:py-1.5 min-h-[42px] sm:min-h-0 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
               mode === 'marathon'
                 ? 'bg-[#262a34] text-[#f97316] shadow-inner font-bold border border-white/10'
                 : 'text-zinc-400 hover:text-white'
@@ -449,7 +449,7 @@ export default function DualTimer() {
 
           <button
             onClick={() => handleModeChange('break')}
-            className={`py-1.5 rounded-xl transition-all ${
+            className={`py-2 sm:py-1.5 min-h-[42px] sm:min-h-0 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
               mode === 'break'
                 ? 'bg-[#262a34] text-[#a855f7] shadow-inner font-bold border border-white/10'
                 : 'text-zinc-400 hover:text-white'
@@ -471,7 +471,7 @@ export default function DualTimer() {
                 <button
                   key={mins}
                   onClick={() => handleSetPomodoroMins(mins)}
-                  className={`py-1 rounded-xl text-[10px] font-bold transition border ${
+                  className={`py-2 sm:py-1 min-h-[40px] sm:min-h-0 flex items-center justify-center rounded-xl text-xs sm:text-[10px] font-bold transition border active:scale-95 ${
                     pomodoroMins === mins
                       ? 'bg-[#55e357]/20 text-[#55e357] border-[#55e357]/40 shadow-sm'
                       : 'bg-[#14161c] text-zinc-400 hover:text-white border-white/5'
@@ -498,7 +498,7 @@ export default function DualTimer() {
                 <button
                   key={mins}
                   onClick={() => handleSetChapterMins(mins)}
-                  className={`py-1 rounded-xl text-[10px] font-bold transition border ${
+                  className={`py-2 sm:py-1 min-h-[40px] sm:min-h-0 flex items-center justify-center rounded-xl text-xs sm:text-[10px] font-bold transition border active:scale-95 ${
                     chapterMins === mins
                       ? 'bg-[#38bdf8]/20 text-[#38bdf8] border-[#38bdf8]/40 shadow-sm'
                       : 'bg-[#14161c] text-zinc-400 hover:text-white border-white/5'
@@ -529,7 +529,7 @@ export default function DualTimer() {
                 <button
                   key={item.mins}
                   onClick={() => handleSetMarathonMins(item.mins)}
-                  className={`py-1 rounded-xl text-[10px] font-bold transition border ${
+                  className={`py-2 sm:py-1 min-h-[40px] sm:min-h-0 flex items-center justify-center rounded-xl text-xs sm:text-[10px] font-bold transition border active:scale-95 ${
                     marathonMins === item.mins
                       ? 'bg-[#f97316]/20 text-[#f97316] border-[#f97316]/40 shadow-sm'
                       : 'bg-[#14161c] text-zinc-400 hover:text-white border-white/5'
@@ -556,7 +556,7 @@ export default function DualTimer() {
                 <button
                   key={mins}
                   onClick={() => handleSetBreakMins(mins)}
-                  className={`py-1 rounded-xl text-[10px] font-bold transition border ${
+                  className={`py-2 sm:py-1 min-h-[40px] sm:min-h-0 flex items-center justify-center rounded-xl text-xs sm:text-[10px] font-bold transition border active:scale-95 ${
                     breakMins === mins
                       ? 'bg-[#a855f7]/20 text-[#a855f7] border-[#a855f7]/40 shadow-sm'
                       : 'bg-[#14161c] text-zinc-400 hover:text-white border-white/5'
@@ -689,7 +689,7 @@ export default function DualTimer() {
         <div className="flex items-center gap-3">
           <button
             onClick={toggleTimer}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition shadow-sleek active:scale-95 text-black"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 sm:py-3 min-h-[48px] sm:min-h-[44px] rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider transition shadow-sleek active:scale-95 text-black"
             style={{
               backgroundColor: isRunning ? '#ea580c' : currentTheme.color,
             }}
@@ -706,7 +706,7 @@ export default function DualTimer() {
 
           <button
             onClick={resetTimer}
-            className="p-3 rounded-full bg-[#262a34] text-zinc-400 hover:text-white border border-white/5 transition"
+            className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-[#262a34] text-zinc-400 hover:text-white border border-white/5 transition active:scale-95"
             title="Reset Timer"
           >
             <RotateCcw className="w-4 h-4" />
@@ -786,7 +786,7 @@ export default function DualTimer() {
               <button
                 key={mins}
                 onClick={() => handleManualQuickLog(mins)}
-                className="py-1 rounded-xl bg-[#14161c] hover:bg-[#262a34] text-zinc-300 hover:text-white border border-white/5 text-[10px] font-bold transition"
+                className="py-2.5 sm:py-1 min-h-[40px] sm:min-h-0 flex items-center justify-center rounded-xl bg-[#14161c] hover:bg-[#262a34] text-zinc-300 hover:text-white border border-white/5 text-xs sm:text-[10px] font-bold transition active:scale-95"
               >
                 +{mins}m
               </button>

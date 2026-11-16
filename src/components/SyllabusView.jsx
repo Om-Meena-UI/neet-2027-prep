@@ -1,7 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, CheckSquare, Sparkles, X, Target, Flame } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  CheckSquare,
+  Sparkles,
+  X,
+  Target,
+  Flame,
+  BookOpen,
+  Clock,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import AnalyticsStrip from './AnalyticsStrip';
-import Sidebar from './Sidebar';
+import Sidebar, { SmartFocusQueue } from './Sidebar';
+import DualTimer from './DualTimer';
+import TodoList from './TodoList';
+import CountdownCard from './CountdownCard';
+import YoutubeMusicEmbed from './YoutubeMusicEmbed';
 import { usePrep } from '../context/PrepContext';
 
 export default function SyllabusView() {
@@ -12,6 +29,9 @@ export default function SyllabusView() {
     toggleChapterAll,
     setChapterDifficulty,
     setSelectedChapterId,
+    mobileSection,
+    setMobileSection,
+    showToast,
   } = usePrep();
 
   const [activeSubject, setActiveSubject] = useState('Physics'); // 'Physics' | 'Chemistry' | 'Biology' | 'All'
@@ -20,6 +40,7 @@ export default function SyllabusView() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedWeightage, setSelectedWeightage] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All'); // 'All' | 'Active' | 'Mastered'
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const isCompact = state.settings?.cardDensity === 'compact';
 
@@ -48,6 +69,14 @@ export default function SyllabusView() {
     selectedDifficulty !== 'All' ||
     selectedWeightage !== 'All' ||
     selectedStatus !== 'All';
+
+  const activeFiltersCount = [
+    searchTerm !== '',
+    selectedClass !== 'All',
+    selectedDifficulty !== 'All',
+    selectedWeightage !== 'All',
+    selectedStatus !== 'All',
+  ].filter(Boolean).length;
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -122,16 +151,74 @@ export default function SyllabusView() {
       ? ['Physics', 'Chemistry', 'Biology']
       : [activeSubject];
 
+  const totalMatchingChapters = Object.values(chaptersBySubject).reduce(
+    (acc, list) => acc + list.length,
+    0
+  );
+
+  const handleSelectChapterForFocus = (chapter) => {
+    setSelectedChapterId(chapter.id);
+    showToast(`Loaded ${chapter.title} into Focus Timer! 🎯`);
+    // On mobile, automatically switch to timer view so the user doesn't have to scroll
+    if (typeof window !== 'undefined' && window.innerWidth < 1024 && setMobileSection) {
+      setMobileSection('timer');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-4 space-y-6">
       {/* Top Hero / Analytics Strip */}
       <AnalyticsStrip />
 
-      {/* Main Grid: 2 columns (Left: Subject Grid, Right: Timer & Countdown Sidebar) */}
+      {/* MOBILE-ONLY VIEW SWITCHER (Desktop unaffected: lg:hidden) */}
+      <div className="lg:hidden flex items-center bg-[#14161c] p-1.5 rounded-2xl border border-white/5 text-xs font-semibold gap-1 shadow-lg">
+        <button
+          onClick={() => setMobileSection && setMobileSection('chapters')}
+          className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[44px] active:scale-95 ${
+            mobileSection === 'chapters'
+              ? 'bg-[#262a34] text-white shadow-inner font-bold border border-white/10'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 text-[#55e357]" />
+          <span>Chapters ({totalMatchingChapters})</span>
+        </button>
+
+        <button
+          onClick={() => setMobileSection && setMobileSection('timer')}
+          className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[44px] active:scale-95 ${
+            mobileSection === 'timer'
+              ? 'bg-[#262a34] text-[#55e357] shadow-inner font-bold border border-white/10'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Clock className="w-4 h-4 text-[#55e357]" />
+          <span>Focus Timer</span>
+        </button>
+
+        <button
+          onClick={() => setMobileSection && setMobileSection('tasks')}
+          className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[44px] active:scale-95 ${
+            mobileSection === 'tasks'
+              ? 'bg-[#262a34] text-sky-400 shadow-inner font-bold border border-white/10'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4 text-sky-400" />
+          <span>Daily Tasks</span>
+        </button>
+      </div>
+
+      {/* Main Grid: 2 columns on desktop (lg:grid-cols-12), stacked / sectioned on mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Chapters by Subject in Grid Form */}
-        <section className="lg:col-span-8 space-y-6">
-          {/* Controls: Search, Subject Switcher, and Filters */}
+        {/* Left Column: Chapters by Subject (Always shown on desktop; shown on mobile if mobileSection === 'chapters') */}
+        <section
+          className={`space-y-6 ${
+            mobileSection === 'chapters' ? 'block' : 'hidden lg:block'
+          } lg:col-span-8`}
+        >
+          {/* Controls: Search, Subject Switcher, Class Switcher, and Filters */}
           <div className="sleek-card p-4 sm:p-5 space-y-3.5">
             {/* Search Input */}
             <div className="relative">
@@ -140,105 +227,148 @@ export default function SyllabusView() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search chapters in grid (e.g., Optics, Genetics, Chemical Bonding)..."
-                className="w-full pl-11 pr-4 py-3 text-xs sm:text-sm rounded-full bg-[#14161c] border border-white/5 text-white placeholder-zinc-500 focus:outline-none focus:border-[#55e357]/50"
+                placeholder="Search chapters (e.g. Optics, Genetics, Chemical Bonding)..."
+                className="w-full pl-11 pr-10 py-3 text-xs sm:text-sm rounded-full bg-[#14161c] border border-white/5 text-white placeholder-zinc-500 focus:outline-none focus:border-[#55e357]/50"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white min-h-[36px] min-w-[36px] flex items-center justify-center"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* Subject Tabs (Physics, Chemistry, Biology) */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
-              <div className="flex items-center gap-1.5 bg-[#14161c] p-1.5 rounded-full border border-white/5">
-                {['Physics', 'Chemistry', 'Biology', 'All'].map((sub) => {
-                  const count =
-                    sub === 'All'
-                      ? Object.values(chaptersBySubject).reduce((acc, list) => acc + list.length, 0)
-                      : chaptersBySubject[sub]?.length || 0;
+            {/* Subject Tabs (Swipeable on mobile, flex on desktop) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {['Physics', 'Chemistry', 'Biology', 'All'].map((sub) => {
+                const count =
+                  sub === 'All'
+                    ? Object.values(chaptersBySubject).reduce(
+                        (acc, list) => acc + list.length,
+                        0
+                      )
+                    : chaptersBySubject[sub]?.length || 0;
 
-                  return (
-                    <button
-                      key={sub}
-                      onClick={() => setActiveSubject(sub)}
-                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                return (
+                  <button
+                    key={sub}
+                    onClick={() => setActiveSubject(sub)}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all min-h-[42px] whitespace-nowrap active:scale-95 flex-shrink-0 ${
+                      activeSubject === sub
+                        ? 'bg-[#55e357] text-black shadow-glow-lime'
+                        : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    <span>{sub}</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
                         activeSubject === sub
-                          ? 'bg-[#55e357] text-black shadow-glow-lime'
-                          : 'text-zinc-400 hover:text-white'
+                          ? 'bg-black/20 text-black'
+                          : 'bg-[#262a34] text-zinc-300'
                       }`}
                     >
-                      <span>{sub}</span>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
-                          activeSubject === sub ? 'bg-black/20 text-black' : 'bg-[#262a34] text-zinc-300'
-                        }`}
-                      >
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Quick Filters */}
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
-                >
-                  <option value="All">All Status</option>
-                  <option value="Active">Active (Uncompleted)</option>
-                  <option value="Mastered">Mastered (3/3)</option>
-                </select>
-
-                <select
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
-                >
-                  <option value="All">All Classes</option>
-                  <option value="Class 11">Class 11</option>
-                  <option value="Class 12">Class 12</option>
-                </select>
-
-                <select
-                  value={selectedDifficulty}
-                  onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
-                >
-                  <option value="All">All Difficulties</option>
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
-
-                <select
-                  value={selectedWeightage}
-                  onChange={(e) => setSelectedWeightage(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-[#14161c] border border-white/5 text-zinc-300 text-xs focus:outline-none cursor-pointer hover:border-white/10"
-                >
-                  <option value="All">All Yields</option>
-                  <option value="High Yield">High Yield ⭐</option>
-                  <option value="Moderate">Moderate</option>
-                  <option value="Low">Low</option>
-                </select>
-
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition text-xs font-semibold"
-                  >
-                    <X className="w-3 h-3" />
-                    <span>Clear</span>
+                      {count}
+                    </span>
                   </button>
-                )}
+                );
+              })}
+            </div>
+
+            {/* One-Tap Class 11 / Class 12 Switcher on Mobile (Desktop also uses clean pill) */}
+            <div className="flex items-center gap-1.5 pt-0.5">
+              <div className="flex items-center bg-[#14161c] p-1 rounded-2xl border border-white/5 text-xs font-semibold flex-1 sm:flex-initial">
+                {[
+                  { label: 'All Classes', value: 'All' },
+                  { label: 'Class 11', value: 'Class 11' },
+                  { label: 'Class 12', value: 'Class 12' },
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    onClick={() => setSelectedClass(item.value)}
+                    className={`flex-1 sm:flex-initial py-1.5 px-3 rounded-xl min-h-[38px] transition-all text-center text-xs font-semibold active:scale-95 ${
+                      selectedClass === item.value
+                        ? 'bg-[#262a34] text-white font-bold border border-white/10 shadow-sm'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
+
+              {/* Mobile Filter Toggle Accordion Button */}
+              <button
+                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                className={`sm:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-2xl min-h-[38px] border text-xs font-semibold transition active:scale-95 ${
+                  hasActiveFilters
+                    ? 'bg-[#55e357]/15 text-[#55e357] border-[#55e357]/30'
+                    : 'bg-[#14161c] text-zinc-400 border-white/5'
+                }`}
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span>Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-[#55e357] text-black text-[9px] font-bold flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
+                {mobileFiltersOpen ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
+
+            {/* Detailed Filters (Collapsible on mobile, always visible on sm/desktop) */}
+            <div
+              className={`${
+                mobileFiltersOpen ? 'flex' : 'hidden sm:flex'
+              } flex-wrap items-center gap-2 text-xs pt-1 border-t border-white/5 sm:border-0`}
+            >
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-2 sm:py-1.5 min-h-[40px] sm:min-h-0 rounded-xl sm:rounded-full bg-[#14161c] border border-white/10 text-zinc-300 text-xs focus:outline-none cursor-pointer flex-1 sm:flex-initial"
+              >
+                <option value="All">All Status</option>
+                <option value="Active">Active (Uncompleted)</option>
+                <option value="Mastered">Mastered (3/3)</option>
+              </select>
+
+              <select
+                value={selectedDifficulty}
+                onChange={(e) => setSelectedDifficulty(e.target.value)}
+                className="px-3 py-2 sm:py-1.5 min-h-[40px] sm:min-h-0 rounded-xl sm:rounded-full bg-[#14161c] border border-white/10 text-zinc-300 text-xs focus:outline-none cursor-pointer flex-1 sm:flex-initial"
+              >
+                <option value="All">All Difficulties</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+
+              <select
+                value={selectedWeightage}
+                onChange={(e) => setSelectedWeightage(e.target.value)}
+                className="px-3 py-2 sm:py-1.5 min-h-[40px] sm:min-h-0 rounded-xl sm:rounded-full bg-[#14161c] border border-white/10 text-zinc-300 text-xs focus:outline-none cursor-pointer flex-1 sm:flex-initial"
+              >
+                <option value="All">All Yields</option>
+                <option value="High Yield">High Yield ★</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Low">Low</option>
+              </select>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 min-h-[40px] sm:min-h-0 rounded-xl sm:rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition text-xs font-semibold active:scale-95 flex-1 sm:flex-initial"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Clear Filters</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -264,8 +394,8 @@ export default function SyllabusView() {
                     No chapters match the selected filter in {subjectName}.
                   </div>
                 ) : (
-                  /* Modern Rounded Grid Layout */
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  /* Modern Rounded Grid Layout (1 col on mobile, 2 col on sm+) */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                     {chapters.map((ch) => {
                       const progress = state.chapterProgress[ch.id] || {
                         ncert: false,
@@ -284,7 +414,7 @@ export default function SyllabusView() {
                         <div
                           key={ch.id}
                           className={`${
-                            isCompact ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'
+                            isCompact ? 'p-3.5 sm:p-3.5' : 'p-4 sm:p-5'
                           } rounded-3xl border flex flex-col justify-between transition-all duration-200 group relative ${
                             isSelectedForFocus
                               ? 'border-[#55e357]/50 shadow-glow-lime bg-[#1d2328]'
@@ -301,7 +431,7 @@ export default function SyllabusView() {
                               </span>
                               {ch.weightage === 'High Yield' && (
                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f97316]/15 text-[#f97316] border border-[#f97316]/30">
-                                  High Yield ⭐
+                                  High Yield ★
                                 </span>
                               )}
                             </div>
@@ -326,7 +456,7 @@ export default function SyllabusView() {
                               <select
                                 value={currentDiff}
                                 onChange={(e) => setChapterDifficulty(ch.id, e.target.value)}
-                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border cursor-pointer focus:outline-none bg-[#14161c] ${diffStyle.badge}`}
+                                className={`text-[10px] font-bold px-2.5 py-1 sm:py-0.5 rounded-full border cursor-pointer focus:outline-none bg-[#14161c] ${diffStyle.badge}`}
                                 title="Click to change chapter difficulty"
                               >
                                 <option value="Easy" className="bg-[#1a1d24] text-emerald-400">
@@ -345,9 +475,9 @@ export default function SyllabusView() {
                           {/* Middle: Title */}
                           <div className="my-2">
                             <button
-                              onClick={() => setSelectedChapterId(ch.id)}
-                              className="text-sm font-bold text-left text-white group-hover:text-[#55e357] transition-colors leading-snug line-clamp-2"
-                              title={ch.title}
+                              onClick={() => handleSelectChapterForFocus(ch)}
+                              className="text-sm sm:text-sm font-bold text-left text-white group-hover:text-[#55e357] transition-colors leading-snug line-clamp-2 block w-full py-1"
+                              title="Tap to focus chapter in timer"
                             >
                               {ch.title}
                             </button>
@@ -355,14 +485,14 @@ export default function SyllabusView() {
 
                           {/* Bottom Card Controls with tactile capsule toggles */}
                           <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2 mt-auto">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0">
                               <button
                                 type="button"
                                 onClick={() => toggleChapterStage(ch.id, 'ncert')}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                className={`flex-1 sm:flex-initial px-2.5 sm:px-2.5 py-2 sm:py-1 min-h-[38px] sm:min-h-0 rounded-xl text-xs sm:text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
                                   progress.ncert
                                     ? 'bg-[#55e357]/20 text-[#55e357] border border-[#55e357]/40 shadow-sm'
-                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5 hover:border-white/10'
+                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5'
                                 }`}
                                 title="Toggle NCERT Reading"
                               >
@@ -377,10 +507,10 @@ export default function SyllabusView() {
                               <button
                                 type="button"
                                 onClick={() => toggleChapterStage(ch.id, 'pyqs')}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                className={`flex-1 sm:flex-initial px-2.5 sm:px-2.5 py-2 sm:py-1 min-h-[38px] sm:min-h-0 rounded-xl text-xs sm:text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
                                   progress.pyqs
                                     ? 'bg-[#55e357]/20 text-[#55e357] border border-[#55e357]/40 shadow-sm'
-                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5 hover:border-white/10'
+                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5'
                                 }`}
                                 title="Toggle Previous Year Questions"
                               >
@@ -395,16 +525,16 @@ export default function SyllabusView() {
                               <button
                                 type="button"
                                 onClick={() => toggleChapterStage(ch.id, 'revision')}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                className={`flex-1 sm:flex-initial px-2.5 sm:px-2.5 py-2 sm:py-1 min-h-[38px] sm:min-h-0 rounded-xl text-xs sm:text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
                                   progress.revision
-                                    ? 'bg-[#55e357]/20 text-[#55e357] border border-[#55e357]/40 shadow-sm'
-                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5 hover:border-white/10'
+                                    ? 'bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/40 shadow-sm'
+                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5'
                                 }`}
                                 title="Toggle Multi-Stage Revision"
                               >
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full ${
-                                    progress.revision ? 'bg-[#55e357]' : 'bg-zinc-600'
+                                    progress.revision ? 'bg-[#38bdf8]' : 'bg-zinc-600'
                                   }`}
                                 />
                                 <span>Rev</span>
@@ -412,26 +542,26 @@ export default function SyllabusView() {
                             </div>
 
                             {/* Quick Action buttons */}
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
                               <button
-                                onClick={() => setSelectedChapterId(ch.id)}
-                                className={`p-1.5 rounded-full transition ${
+                                onClick={() => handleSelectChapterForFocus(ch)}
+                                className={`p-2.5 sm:p-1.5 min-h-[40px] min-w-[40px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-xl transition active:scale-95 ${
                                   isSelectedForFocus
-                                    ? 'text-[#55e357] bg-[#55e357]/10'
-                                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                                    ? 'text-[#55e357] bg-[#55e357]/15 border border-[#55e357]/40 shadow-sm'
+                                    : 'text-zinc-400 hover:text-white bg-[#14161c] border border-white/5'
                                 }`}
-                                title="Set as Active Focus Timer Chapter"
+                                title="Load into Focus Timer"
                               >
-                                <Target className="w-4 h-4" />
+                                <Target className="w-4 h-4 text-[#55e357]" />
                               </button>
 
                               <button
                                 onClick={() => toggleChapterAll(ch.id)}
                                 title={isMastered ? 'Mark uncompleted' : 'Mark all 3 stages done'}
-                                className={`p-1.5 rounded-xl transition ${
+                                className={`p-2.5 sm:p-1.5 min-h-[40px] min-w-[40px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-xl transition active:scale-95 ${
                                   isMastered
                                     ? 'bg-[#55e357] text-black font-bold shadow-glow-lime'
-                                    : 'bg-[#262a34] text-zinc-400 hover:text-white hover:bg-[#323744]'
+                                    : 'bg-[#262a34] text-zinc-400 hover:text-white hover:bg-[#323744] border border-white/5'
                                 }`}
                               >
                                 <CheckSquare className="w-4 h-4" />
@@ -448,8 +578,25 @@ export default function SyllabusView() {
           })}
         </section>
 
-        {/* Right Column: Sticky Sidebar */}
-        <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+        {/* MOBILE TIMER VIEW: Instant access on mobile when Timer tab is active (Zero scrolling!) */}
+        {mobileSection === 'timer' && (
+          <div className="lg:hidden space-y-6 animate-in fade-in duration-150">
+            <DualTimer />
+            <SmartFocusQueue />
+            <CountdownCard />
+          </div>
+        )}
+
+        {/* MOBILE TASKS VIEW: Instant access on mobile when Tasks tab is active */}
+        {mobileSection === 'tasks' && (
+          <div className="lg:hidden space-y-6 animate-in fade-in duration-150">
+            <TodoList />
+            <YoutubeMusicEmbed />
+          </div>
+        )}
+
+        {/* DESKTOP SIDEBAR: Completely untouched 2-column layout (Hidden on mobile to avoid duplication) */}
+        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 space-y-6">
           <Sidebar />
         </div>
       </div>
