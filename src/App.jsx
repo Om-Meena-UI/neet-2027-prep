@@ -19,7 +19,7 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black pb-36 sm:pb-28">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black pb-36 sm:pb-28">
       {/* Sleek Floating Capsule Top Navbar */}
       <Navbar
         onOpenFlashcards={() => setIsFlashcardOpen(true)}
