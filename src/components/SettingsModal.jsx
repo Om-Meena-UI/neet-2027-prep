@@ -408,6 +408,9 @@ export default function SettingsModal({ isOpen, onClose }) {
                     </button>
                   ))}
                 </div>
+                <p className="text-[11px] text-zinc-400">
+                  Days meeting or exceeding this target are awarded a <span className="text-amber-400 font-bold">Radiant Gold Tier ⭐</span> on the 365-day heatmap and streak pills.
+                </p>
               </div>
 
               {/* Pomodoro Focus & Break Presets */}

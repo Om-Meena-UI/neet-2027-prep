@@ -7,6 +7,9 @@ export default function AnalyticsStrip() {
   const { metrics, state, consistency, toggleHeatmapCollapsed } = usePrep();
   const { overallReadiness, subjectStats, totalChapters, masteredChapters } = metrics;
 
+  const dailyHoursGoal = state.settings?.dailyHoursGoal || 8;
+  const targetMinutes = dailyHoursGoal * 60;
+
   // Generate 7-day rolling mini calendar strip like Habify reference image
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const weekDays = [];
@@ -20,6 +23,7 @@ export default function AnalyticsStrip() {
     const minutes = dayActivity.minutes || 0;
     const checks = dayActivity.checks || 0;
     const hasActivity = Boolean(minutes > 0 || checks > 0);
+    const exceededTarget = minutes >= targetMinutes && targetMinutes > 0;
 
     let activityLabel = '';
     if (minutes >= 60) {
@@ -36,6 +40,7 @@ export default function AnalyticsStrip() {
       dayName: daysOfWeek[d.getDay()],
       isToday,
       hasActivity,
+      exceededTarget,
       activityLabel,
     });
   }
@@ -76,22 +81,25 @@ export default function AnalyticsStrip() {
               <div
                 key={d.dateStr}
                 className={`flex flex-col items-center justify-center w-12 h-14 rounded-2xl border transition-all ${
-                  d.isToday
+                  d.exceededTarget
+                    ? 'bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-black border-amber-300 font-black shadow-[0_0_15px_rgba(251,191,36,0.55)] ring-1 ring-amber-300/80 scale-105'
+                    : d.isToday
                     ? 'bg-[#55e357] text-black border-[#55e357] font-bold shadow-glow-lime'
                     : d.hasActivity
                     ? 'bg-[#262a34] text-white border-white/20'
                     : 'bg-[#14161c] text-zinc-400 border-white/5'
                 }`}
+                title={d.exceededTarget ? `🏆 Target Exceeded! (${d.activityLabel} vs ${dailyHoursGoal}h goal)` : undefined}
               >
                 <span className="text-[10px] uppercase font-semibold leading-none">{d.dayName}</span>
                 <span className="text-sm font-black font-mono mt-1 leading-none">{d.dayNum}</span>
                 {d.activityLabel ? (
                   <span
-                    className={`text-[9px] font-mono font-bold leading-none mt-1 ${
-                      d.isToday ? 'text-black/80' : 'text-[#55e357]'
+                    className={`text-[9px] font-mono font-bold leading-none mt-1 flex items-center gap-0.5 ${
+                      d.exceededTarget ? 'text-black font-black' : d.isToday ? 'text-black/80' : 'text-[#55e357]'
                     }`}
                   >
-                    {d.activityLabel}
+                    {d.exceededTarget && '★'}{d.activityLabel}
                   </span>
                 ) : (
                   <span className="w-1 h-1 rounded-full bg-transparent mt-1" />

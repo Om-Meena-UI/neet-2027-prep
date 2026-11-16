@@ -74,6 +74,19 @@
 .react-calendar-heatmap .color-scale-4 {
   fill: #55e357;
 }
+/* Golden Tier for Days Exceeding Target Study Hours */
+.react-calendar-heatmap .color-scale-gold {
+  fill: #fbbf24;
+  stroke: #f59e0b;
+  stroke-width: 0.5px;
+  filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.7));
+}
+.react-calendar-heatmap .color-scale-gold:hover {
+  fill: #fde047;
+  stroke: #fbbf24;
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9));
+}
 
 /* Music Player Equalizer Animation */
 .eq-bar-1 {

@@ -1,11 +1,15 @@
 import React, { useMemo } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { Flame, Award, Clock, CheckCircle2 } from 'lucide-react';
+import { Flame, Award, Clock, CheckCircle2, Sparkles } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
 export default function Heatmap() {
   const { state, consistency } = usePrep();
+
+  const dailyHoursGoal = state.settings?.dailyHoursGoal || 8;
+  const targetMinutes = dailyHoursGoal * 60;
+  const isTodayTargetExceeded = (consistency.todayMinutes || 0) >= targetMinutes && targetMinutes > 0;
 
   const today = useMemo(() => new Date(), []);
   const oneYearAgo = useMemo(() => {
@@ -16,18 +20,25 @@ export default function Heatmap() {
 
   const heatmapValues = useMemo(() => {
     return Object.entries(state.dailyActivity || {}).map(([date, data]) => {
-      const intensity = (data.minutes || 0) + (data.checks || 0) * 15;
+      const mins = data.minutes || 0;
+      const chks = data.checks || 0;
+      const intensity = mins + chks * 15;
+      const exceededTarget = mins >= targetMinutes && targetMinutes > 0;
+
       return {
         date,
         count: intensity,
-        minutes: data.minutes || 0,
-        checks: data.checks || 0,
+        minutes: mins,
+        checks: chks,
+        exceededTarget,
       };
     });
-  }, [state.dailyActivity]);
+  }, [state.dailyActivity, targetMinutes]);
 
   const getClassForValue = (value) => {
     if (!value || value.count === 0) return 'color-empty';
+    // Special Radiant Golden Tier when daily study target is met or exceeded
+    if (value.exceededTarget) return 'color-scale-gold';
     if (value.count < 30) return 'color-scale-1';
     if (value.count < 90) return 'color-scale-2';
     if (value.count < 180) return 'color-scale-3';
@@ -37,6 +48,9 @@ export default function Heatmap() {
   const getTitleForValue = (value) => {
     if (!value || !value.date) return 'No study recorded';
     const hrs = (value.minutes / 60).toFixed(1);
+    if (value.exceededTarget) {
+      return `⭐ ${value.date}: ${value.minutes}m (${hrs} hrs) — TARGET EXCEEDED! (Goal: ${dailyHoursGoal}h) • ${value.checks} checks`;
+    }
     return `${value.date}: ${value.minutes} mins (${hrs} hrs) study • ${value.checks} checks`;
   };
 
@@ -68,15 +82,35 @@ export default function Heatmap() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-[#14161c] border border-white/5 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#55e357]/10 text-[#55e357] flex items-center justify-center flex-shrink-0">
-            <Clock className="w-4 h-4" />
+        <div
+          className={`p-3.5 rounded-2xl border transition-all flex items-center gap-3 ${
+            isTodayTargetExceeded
+              ? 'bg-[#181a20] border-amber-400/40 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30'
+              : 'bg-[#14161c] border-white/5'
+          }`}
+        >
+          <div
+            className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+              isTodayTargetExceeded
+                ? 'bg-amber-400 text-black shadow-md font-bold'
+                : 'bg-[#55e357]/10 text-[#55e357]'
+            }`}
+          >
+            {isTodayTargetExceeded ? <Sparkles className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
           </div>
           <div>
-            <div className="text-lg font-bold font-mono text-white leading-tight">
-              {consistency.todayMinutes} <span className="text-[10px] font-sans font-normal text-zinc-400">mins</span>
+            <div className="text-lg font-bold font-mono text-white leading-tight flex items-center gap-1.5">
+              <span>{consistency.todayMinutes}</span>
+              <span className="text-[10px] font-sans font-normal text-zinc-400">mins</span>
+              {isTodayTargetExceeded && (
+                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-amber-400 text-black">
+                  Goal Met! 🏆
+                </span>
+              )}
             </div>
-            <div className="text-[10px] font-medium text-zinc-400">Today's Focus</div>
+            <div className="text-[10px] font-medium text-zinc-400">
+              Today's Focus ({dailyHoursGoal}h target)
+            </div>
           </div>
         </div>
 
@@ -113,10 +147,12 @@ export default function Heatmap() {
           <span className="font-bold text-white uppercase tracking-wider text-[10px]">
             Study Hours Color Scale
           </span>
-          <span className="text-[11px] text-zinc-400">Hover over any square for exact hours & checks</span>
+          <span className="text-[11px] text-zinc-400">
+            Target: <span className="font-bold text-amber-400">{dailyHoursGoal}h / day</span> (configured in Settings)
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
           <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-white/5">
             <span className="w-3.5 h-3.5 rounded-md bg-[#181b22] border border-white/10 flex-shrink-0" />
             <div>
@@ -149,11 +185,23 @@ export default function Heatmap() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-[#55e357]/20 shadow-glow-lime">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1a1d24] border border-[#55e357]/20">
             <span className="w-3.5 h-3.5 rounded-md bg-[#55e357] shadow-sm flex-shrink-0" />
             <div>
               <div className="text-[11px] font-bold text-[#55e357]">3+ Hours</div>
-              <div className="text-[9px] text-zinc-300 font-medium">NEET Marathon</div>
+              <div className="text-[9px] text-zinc-400">NEET Marathon</div>
+            </div>
+          </div>
+
+          {/* Golden Tier: Target Met / Exceeded */}
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-[#1e1c15] border border-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.18)]">
+            <span className="w-3.5 h-3.5 rounded-md bg-[#fbbf24] border border-amber-300 shadow-[0_0_6px_rgba(251,191,36,0.7)] flex-shrink-0" />
+            <div>
+              <div className="text-[11px] font-black text-amber-400 flex items-center gap-1">
+                <span>{dailyHoursGoal}+ Hours</span>
+                <span className="text-[10px]">⭐</span>
+              </div>
+              <div className="text-[9px] text-amber-300/80 font-medium">Target Exceeded</div>
             </div>
           </div>
         </div>
