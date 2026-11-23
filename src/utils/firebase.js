@@ -15,6 +15,9 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
+  collection,
+  getDocs,
+  deleteDoc,
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -84,14 +87,45 @@ export const saveUserStateToCloud = async (uid, state) => {
       dailyActivity: state.dailyActivity || {},
       todos: state.todos || [],
       mockTests: state.mockTests || [],
+      trapCards: state.trapCards || [],
       selectedChapterId: state.selectedChapterId || '',
       updatedAt: serverTimestamp(),
     };
+
+    // If total questions payload is compact (<700KB), embed directly in user document for fast atomic load
+    const questionsArr = Array.isArray(state.questions) ? state.questions : [];
+    const questionsJson = JSON.stringify(questionsArr);
+    if (questionsJson.length < 700000) {
+      statePayload.questions = questionsArr;
+    }
+
     await withTimeout(setDoc(userDocRef, statePayload, { merge: true }), 7000);
+
+    // Also persist each question into subcollection users/{uid}/questions/{id}
+    // This allows students to store hundreds of photo questions without ever exceeding the 1MB Firestore document limit!
+    if (questionsArr.length > 0) {
+      const qColl = collection(db, 'users', uid, 'questions');
+      const writePromises = questionsArr.map((q) =>
+        setDoc(doc(qColl, q.id), q, { merge: true }).catch((e) =>
+          console.warn(`Question cloud sync error for ${q.id}:`, e)
+        )
+      );
+      await Promise.all(writePromises);
+    }
+
     return true;
   } catch (err) {
     console.error('Firestore saveUserStateToCloud error:', err);
     throw err;
+  }
+};
+
+export const deleteQuestionFromCloud = async (uid, questionId) => {
+  if (!uid || !questionId) return;
+  try {
+    await deleteDoc(doc(db, 'users', uid, 'questions', questionId));
+  } catch (err) {
+    console.warn('Failed to delete question from cloud database:', err);
   }
 };
 
@@ -100,9 +134,42 @@ export const loadUserStateFromCloud = async (uid) => {
   try {
     const userDocRef = doc(db, 'users', uid);
     const docSnap = await withTimeout(getDoc(userDocRef), 7000);
-    if (docSnap.exists()) {
-      return docSnap.data();
+
+    // Also load any questions stored in the questions subcollection
+    let subcollectionQuestions = [];
+    try {
+      const qColl = collection(db, 'users', uid, 'questions');
+      const qSnap = await withTimeout(getDocs(qColl), 6000);
+      if (!qSnap.empty) {
+        subcollectionQuestions = qSnap.docs.map((d) => d.data());
+      }
+    } catch (qErr) {
+      console.warn('Subcollection questions fetch notice:', qErr);
     }
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      // Combine questions from subcollection and main doc, preferring subcollection if present
+      const embeddedQuestions = Array.isArray(data.questions) ? data.questions : [];
+      const questionsMap = new Map();
+
+      embeddedQuestions.forEach((q) => {
+        if (q && q.id) questionsMap.set(q.id, q);
+      });
+      subcollectionQuestions.forEach((q) => {
+        if (q && q.id) questionsMap.set(q.id, q);
+      });
+
+      return {
+        ...data,
+        questions: Array.from(questionsMap.values()),
+      };
+    } else if (subcollectionQuestions.length > 0) {
+      return {
+        questions: subcollectionQuestions,
+      };
+    }
+
     return null;
   } catch (err) {
     console.error('Firestore loadUserStateFromCloud error:', err);

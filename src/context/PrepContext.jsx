@@ -19,6 +19,7 @@ import {
   onAuthStateChanged,
   saveUserStateToCloud,
   loadUserStateFromCloud,
+  deleteQuestionFromCloud,
 } from '../utils/firebase';
 import { DEFAULT_SETTINGS, getDefaultState } from '../utils/storage';
 
@@ -502,6 +503,11 @@ export function PrepProvider({ children }) {
       ...prev,
       questions: (prev.questions || []).filter((q) => q.id !== id),
     }));
+    if (user?.uid) {
+      deleteQuestionFromCloud(user.uid, id).catch((e) =>
+        console.warn('Cloud question delete notice:', e)
+      );
+    }
     showToast('Question removed from Question Bank.');
   };
 
