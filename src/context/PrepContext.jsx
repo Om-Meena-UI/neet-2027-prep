@@ -235,7 +235,13 @@ export function PrepProvider({ children }) {
 
     allChapters.forEach((ch) => {
       const prog = state.chapterProgress[ch.id] || {};
-      const doneCount = stages.filter((s) => Boolean(prog[s])).length;
+      const revCount =
+        typeof prog.revisions === 'number'
+          ? prog.revisions
+          : prog.revision
+          ? 1
+          : 0;
+      const doneCount = [prog.ncert, prog.pyqs, revCount > 0].filter(Boolean).length;
       completedCheckboxes += doneCount;
       if (doneCount === 3) masteredChapters += 1;
 
@@ -279,6 +285,59 @@ export function PrepProvider({ children }) {
     setState((prev) => ({ ...prev, activeTab: tab }));
   };
 
+  const getChapterRevisions = (prog) => {
+    if (!prog) return 0;
+    if (typeof prog.revisions === 'number') return prog.revisions;
+    return prog.revision ? 1 : 0;
+  };
+
+  const incrementChapterRevision = (chapterId, delta = 1) => {
+    const todayKey = getLocalDateKey();
+    setState((prev) => {
+      const current = prev.chapterProgress[chapterId] || {
+        ncert: false,
+        pyqs: false,
+        revision: false,
+        revisions: 0,
+      };
+      const currentCount = getChapterRevisions(current);
+      const newCount = Math.max(0, currentCount + delta);
+      const isNowRevDone = newCount > 0;
+      const todayEntry = prev.dailyActivity[todayKey] || { minutes: 0, checks: 0 };
+      const checksDelta = delta > 0 ? delta : newCount === 0 && currentCount > 0 ? -1 : 0;
+
+      const chObj = allChapters.find((c) => c.id === chapterId);
+      const chTitle = chObj ? chObj.title : 'Chapter';
+
+      if (delta > 0) {
+        showToast(`🎉 Logged Revision #${newCount} for ${chTitle}! 📖`);
+      } else if (newCount === 0) {
+        showToast(`Revisions reset to 0 for ${chTitle}`);
+      } else {
+        showToast(`Revisions set to ${newCount} for ${chTitle}`);
+      }
+
+      return {
+        ...prev,
+        chapterProgress: {
+          ...prev.chapterProgress,
+          [chapterId]: {
+            ...current,
+            revisions: newCount,
+            revision: isNowRevDone,
+          },
+        },
+        dailyActivity: {
+          ...prev.dailyActivity,
+          [todayKey]: {
+            minutes: todayEntry.minutes || 0,
+            checks: Math.max(0, (todayEntry.checks || 0) + checksDelta),
+          },
+        },
+      };
+    });
+  };
+
   const toggleChapterStage = (chapterId, stage) => {
     const todayKey = getLocalDateKey();
     setState((prev) => {
@@ -286,7 +345,36 @@ export function PrepProvider({ children }) {
         ncert: false,
         pyqs: false,
         revision: false,
+        revisions: 0,
       };
+
+      if (stage === 'revision') {
+        const currentCount = getChapterRevisions(current);
+        const nextCount = currentCount > 0 ? 0 : 1;
+        const nextVal = nextCount > 0;
+        const delta = nextVal ? 1 : -1;
+        const todayEntry = prev.dailyActivity[todayKey] || { minutes: 0, checks: 0 };
+
+        return {
+          ...prev,
+          chapterProgress: {
+            ...prev.chapterProgress,
+            [chapterId]: {
+              ...current,
+              revision: nextVal,
+              revisions: nextCount,
+            },
+          },
+          dailyActivity: {
+            ...prev.dailyActivity,
+            [todayKey]: {
+              minutes: todayEntry.minutes || 0,
+              checks: Math.max(0, (todayEntry.checks || 0) + delta),
+            },
+          },
+        };
+      }
+
       const nextVal = !current[stage];
       const todayEntry = prev.dailyActivity[todayKey] || { minutes: 0, checks: 0 };
       const delta = nextVal ? 1 : -1;
@@ -315,13 +403,12 @@ export function PrepProvider({ children }) {
     const todayKey = getLocalDateKey();
     setState((prev) => {
       const current = prev.chapterProgress[chapterId] || {};
+      const revCount = getChapterRevisions(current);
       const currentlyMastered = Boolean(
-        current.ncert && current.pyqs && current.revision
+        current.ncert && current.pyqs && revCount > 0
       );
       const target = !currentlyMastered;
-      const existingDone = ['ncert', 'pyqs', 'revision'].filter((s) =>
-        Boolean(current[s])
-      ).length;
+      const existingDone = [current.ncert, current.pyqs, revCount > 0].filter(Boolean).length;
       const delta = target ? 3 - existingDone : -existingDone;
       const todayEntry = prev.dailyActivity[todayKey] || { minutes: 0, checks: 0 };
 
@@ -333,6 +420,7 @@ export function PrepProvider({ children }) {
             ncert: target,
             pyqs: target,
             revision: target,
+            revisions: target ? Math.max(1, revCount) : 0,
           },
         },
         dailyActivity: {
@@ -681,6 +769,8 @@ export function PrepProvider({ children }) {
     mobileSection,
     setMobileSection,
     toggleChapterStage,
+    incrementChapterRevision,
+    getChapterRevisions,
     toggleChapterAll,
     setChapterDifficulty,
     addTodo,

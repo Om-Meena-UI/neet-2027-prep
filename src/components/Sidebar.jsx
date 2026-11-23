@@ -10,11 +10,15 @@ export function SmartFocusQueue() {
   const { allChapters, state, toggleChapterAll, setSelectedChapterId, setMobileSection, showToast } = usePrep();
 
   // Smart Focus Queue: find unmastered high-yield chapters first
+  const isChapterMastered = (prog) => {
+    const revCount = typeof prog.revisions === 'number' ? prog.revisions : (prog.revision ? 1 : 0);
+    return Boolean(prog.ncert && prog.pyqs && revCount > 0);
+  };
+
   const uncompletedHighYield = allChapters
     .filter((ch) => {
       const prog = state.chapterProgress[ch.id] || {};
-      const isMastered = prog.ncert && prog.pyqs && prog.revision;
-      return !isMastered && ch.weightage === 'High Yield';
+      return !isChapterMastered(prog) && ch.weightage === 'High Yield';
     })
     .slice(0, 3);
 
@@ -23,8 +27,7 @@ export function SmartFocusQueue() {
       ? allChapters
           .filter((ch) => {
             const prog = state.chapterProgress[ch.id] || {};
-            const isMastered = prog.ncert && prog.pyqs && prog.revision;
-            return !isMastered && ch.weightage === 'Moderate';
+            return !isChapterMastered(prog) && ch.weightage === 'Moderate';
           })
           .slice(0, 3 - uncompletedHighYield.length)
       : [];
@@ -63,7 +66,8 @@ export function SmartFocusQueue() {
         <div className="space-y-2">
           {focusQueue.map((ch) => {
             const prog = state.chapterProgress[ch.id] || {};
-            const doneCount = ['ncert', 'pyqs', 'revision'].filter((s) => Boolean(prog[s])).length;
+            const revCount = typeof prog.revisions === 'number' ? prog.revisions : (prog.revision ? 1 : 0);
+            const doneCount = [prog.ncert, prog.pyqs, revCount > 0].filter(Boolean).length;
 
             return (
               <div

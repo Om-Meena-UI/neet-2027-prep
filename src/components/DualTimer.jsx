@@ -26,7 +26,15 @@ const STORAGE_TIMER_MARATHON = 'neet27_timer_marathon_mins';
 const STORAGE_TIMER_MODE = 'neet27_timer_active_mode';
 
 export default function DualTimer() {
-  const { allChapters, state, setSelectedChapterId, logFocusMinutes, toggleChapterStage, showToast } = usePrep();
+  const {
+    allChapters,
+    state,
+    setSelectedChapterId,
+    logFocusMinutes,
+    toggleChapterStage,
+    incrementChapterRevision,
+    showToast,
+  } = usePrep();
   const { isPlaying: isMusicPlaying, togglePlay: toggleMusicPlay } = useMusic();
 
   const soundEnabled = state.settings?.soundAlerts !== false;
@@ -104,7 +112,14 @@ export default function DualTimer() {
     ncert: false,
     pyqs: false,
     revision: false,
+    revisions: 0,
   };
+  const chapterRevCount =
+    typeof chapterProgress.revisions === 'number'
+      ? chapterProgress.revisions
+      : chapterProgress.revision
+      ? 1
+      : 0;
 
   // Persist mode choice
   useEffect(() => {
@@ -656,11 +671,15 @@ export default function DualTimer() {
                 PYQ
               </span>
               <span
-                className={`px-1.5 py-0.5 rounded-md ${
-                  chapterProgress.revision ? 'bg-[#38bdf8]/20 text-[#38bdf8]' : 'bg-zinc-800 text-zinc-500'
+                className={`px-1.5 py-0.5 rounded-md font-bold ${
+                  chapterRevCount > 0
+                    ? chapterRevCount >= 3
+                      ? 'bg-amber-400/20 text-amber-300'
+                      : 'bg-[#38bdf8]/20 text-[#38bdf8]'
+                    : 'bg-zinc-800 text-zinc-500'
                 }`}
               >
-                REV
+                {chapterRevCount > 0 ? `REV ${chapterRevCount}x` : 'REV'}
               </span>
             </div>
           </div>
@@ -750,14 +769,10 @@ export default function DualTimer() {
             {completedSession.mode === 'chapter' && (
               <div className="flex items-center gap-2 pt-1">
                 <button
-                  onClick={() => toggleChapterStage(selectedChapter.id, 'revision')}
-                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold border transition ${
-                    chapterProgress.revision
-                      ? 'bg-[#38bdf8] text-black border-[#38bdf8]'
-                      : 'bg-[#262a34] text-[#38bdf8] border-[#38bdf8]/40 hover:bg-[#38bdf8]/20'
-                  }`}
+                  onClick={() => incrementChapterRevision(selectedChapter.id, 1)}
+                  className="flex-1 py-1.5 rounded-xl text-[10px] font-bold border transition bg-[#38bdf8] text-black border-[#38bdf8] hover:bg-[#38bdf8]/90 shadow-sm"
                 >
-                  Mark Revision {chapterProgress.revision ? '✓ Done' : '+ Complete'}
+                  + Log Revision #{chapterRevCount + 1}
                 </button>
                 <button
                   onClick={() => toggleChapterStage(selectedChapter.id, 'pyqs')}

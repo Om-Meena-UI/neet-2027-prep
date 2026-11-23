@@ -26,6 +26,7 @@ export default function SyllabusView() {
     allChapters,
     state,
     toggleChapterStage,
+    incrementChapterRevision,
     toggleChapterAll,
     setChapterDifficulty,
     setSelectedChapterId,
@@ -118,7 +119,13 @@ export default function SyllabusView() {
 
       // Status filter
       const prog = state.chapterProgress?.[ch.id] || {};
-      const isMastered = Boolean(prog.ncert && prog.pyqs && prog.revision);
+      const revCount =
+        typeof prog.revisions === 'number'
+          ? prog.revisions
+          : prog.revision
+          ? 1
+          : 0;
+      const isMastered = Boolean(prog.ncert && prog.pyqs && revCount > 0);
       if (selectedStatus === 'Active' && isMastered) {
         return;
       }
@@ -401,11 +408,20 @@ export default function SyllabusView() {
                         ncert: false,
                         pyqs: false,
                         revision: false,
+                        revisions: 0,
                       };
-                      const isMastered = progress.ncert && progress.pyqs && progress.revision;
-                      const completedStages = ['ncert', 'pyqs', 'revision'].filter(
-                        (s) => Boolean(progress[s])
-                      ).length;
+                      const revisionCount =
+                        typeof progress.revisions === 'number'
+                          ? progress.revisions
+                          : progress.revision
+                          ? 1
+                          : 0;
+                      const isMastered = progress.ncert && progress.pyqs && revisionCount > 0;
+                      const completedStages = [
+                        progress.ncert,
+                        progress.pyqs,
+                        revisionCount > 0,
+                      ].filter(Boolean).length;
                       const isSelectedForFocus = state.selectedChapterId === ch.id;
                       const currentDiff = ch.difficulty;
                       const diffStyle = difficultyConfig[currentDiff] || difficultyConfig.Medium;
@@ -440,16 +456,29 @@ export default function SyllabusView() {
                               {/* 3-Bar Micro Checkpoint Progress */}
                               <div
                                 className="flex items-center gap-1"
-                                title={`${completedStages}/3 checkpoints mastered`}
+                                title={`NCERT: ${progress.ncert ? '✓ Done' : 'Pending'} • PYQs: ${
+                                  progress.pyqs ? '✓ Done' : 'Pending'
+                                } • Revisions: ${revisionCount}x`}
                               >
-                                {[1, 2, 3].map((step) => (
-                                  <span
-                                    key={step}
-                                    className={`h-1.5 w-3 rounded-full transition-colors ${
-                                      completedStages >= step ? 'bg-[#55e357]' : 'bg-white/10'
-                                    }`}
-                                  />
-                                ))}
+                                <span
+                                  className={`h-1.5 w-3 rounded-full transition-colors ${
+                                    progress.ncert ? 'bg-[#55e357]' : 'bg-white/10'
+                                  }`}
+                                />
+                                <span
+                                  className={`h-1.5 w-3 rounded-full transition-colors ${
+                                    progress.pyqs ? 'bg-[#55e357]' : 'bg-white/10'
+                                  }`}
+                                />
+                                <span
+                                  className={`h-1.5 w-3 rounded-full transition-colors ${
+                                    revisionCount >= 3
+                                      ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]'
+                                      : revisionCount > 0
+                                      ? 'bg-[#38bdf8]'
+                                      : 'bg-white/10'
+                                  }`}
+                                />
                               </div>
 
                               {/* Difficulty Selector */}
@@ -522,23 +551,70 @@ export default function SyllabusView() {
                                 <span>PYQs</span>
                               </button>
 
-                              <button
-                                type="button"
-                                onClick={() => toggleChapterStage(ch.id, 'revision')}
-                                className={`flex-1 sm:flex-initial px-2.5 sm:px-2.5 py-2 sm:py-1 min-h-[38px] sm:min-h-0 rounded-xl text-xs sm:text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
-                                  progress.revision
-                                    ? 'bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/40 shadow-sm'
-                                    : 'bg-[#14161c] text-zinc-400 hover:text-white border border-white/5'
+                              {/* Multi-Revision Stepper Capsule */}
+                              <div
+                                className={`flex items-center rounded-xl border transition-all ${
+                                  revisionCount > 0
+                                    ? revisionCount >= 3
+                                      ? 'bg-amber-400/15 border-amber-400/40 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.15)]'
+                                      : 'bg-[#38bdf8]/20 border-[#38bdf8]/40 text-[#38bdf8] shadow-sm'
+                                    : 'bg-[#14161c] border-white/5 text-zinc-400'
                                 }`}
-                                title="Toggle Multi-Stage Revision"
                               >
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full ${
-                                    progress.revision ? 'bg-[#38bdf8]' : 'bg-zinc-600'
+                                {revisionCount > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      incrementChapterRevision(ch.id, -1);
+                                    }}
+                                    className="px-2 py-2 sm:py-1 hover:text-white transition rounded-l-xl text-xs font-bold active:scale-95 border-r border-white/10"
+                                    title="Decrease revision count (-1)"
+                                  >
+                                    -
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementChapterRevision(ch.id, 1)}
+                                  className={`px-2.5 py-2 sm:py-1 min-h-[38px] sm:min-h-0 text-xs sm:text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
+                                    revisionCount === 0 ? 'hover:text-white' : ''
                                   }`}
-                                />
-                                <span>Rev</span>
-                              </button>
+                                  title={`Completed ${revisionCount} revisions. Click to log Revision #${
+                                    revisionCount + 1
+                                  }!`}
+                                >
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      revisionCount >= 3
+                                        ? 'bg-amber-400'
+                                        : revisionCount > 0
+                                        ? 'bg-[#38bdf8]'
+                                        : 'bg-zinc-600'
+                                    }`}
+                                  />
+                                  <span>
+                                    {revisionCount === 0
+                                      ? '+ Rev'
+                                      : `Rev ${revisionCount}x${
+                                          revisionCount >= 3 ? ' ★' : ''
+                                        }`}
+                                  </span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    incrementChapterRevision(ch.id, 1);
+                                  }}
+                                  className="px-2 py-2 sm:py-1 hover:text-white transition rounded-r-xl text-xs font-bold active:scale-95 border-l border-white/10"
+                                  title="Log another revision (+1)"
+                                >
+                                  +
+                                </button>
+                              </div>
                             </div>
 
                             {/* Quick Action buttons */}
