@@ -9,6 +9,7 @@ import {
   parseAndValidateImport,
   saveState,
   saveUser,
+  clearLoggedOutData,
 } from '../utils/storage';
 import {
   auth,
@@ -26,15 +27,18 @@ import { DEFAULT_SETTINGS, getDefaultState } from '../utils/storage';
 const PrepContext = createContext(null);
 
 export function PrepProvider({ children }) {
-  const [state, setState] = useState(() => loadState());
   const [user, setUser] = useState(() => loadUser());
+  const [state, setState] = useState(() => {
+    const initialUser = loadUser();
+    return loadState(initialUser?.uid || null);
+  });
   const [toast, setToast] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
 
   // Save locally and auto-sync changes to Cloud Firestore in background
   useEffect(() => {
-    saveState(state);
+    saveState(state, user?.uid || null);
 
     if (user?.uid && state.settings?.autoCloudSync !== false) {
       const handler = setTimeout(() => {
@@ -65,6 +69,10 @@ export function PrepProvider({ children }) {
         };
         setUser(mappedUser);
 
+        // Instantly load local data cached for this specific user
+        const userLocal = loadState(firebaseUser.uid);
+        setState(userLocal);
+
         // Auto-pull latest study progress from Cloud Firestore on login
         try {
           const cloudData = await loadUserStateFromCloud(firebaseUser.uid);
@@ -81,12 +89,18 @@ export function PrepProvider({ children }) {
             showToast(`☁️ Restored prep progress from cloud for ${mappedUser.name}!`);
           } else {
             // First time login with this account: back up current state to cloud
-            await saveUserStateToCloud(firebaseUser.uid, state);
+            await saveUserStateToCloud(firebaseUser.uid, userLocal);
             setLastSyncTime(new Date());
           }
         } catch (err) {
           console.warn('Auto cloud sync on login notice:', err);
         }
+      } else {
+        // Logged out / unauthenticated: Clear memory and storage so account data is NOT visible when logged out
+        setUser(null);
+        saveUser(null);
+        clearLoggedOutData();
+        setState(getDefaultState());
       }
     });
 
@@ -171,9 +185,15 @@ export function PrepProvider({ children }) {
     try {
       await logoutFirebase();
       setUser(null);
+      saveUser(null);
+      clearLoggedOutData();
+      setState(getDefaultState());
       showToast('Signed out successfully.');
     } catch (err) {
       setUser(null);
+      saveUser(null);
+      clearLoggedOutData();
+      setState(getDefaultState());
     }
   };
 

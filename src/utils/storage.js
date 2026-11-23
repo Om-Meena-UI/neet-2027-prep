@@ -72,10 +72,33 @@ export function getDefaultState() {
   };
 }
 
-export function loadState() {
+export function getStorageKeyForUser(uid = null) {
+  if (!uid) return 'neet2027_guest_state';
+  return `neet2027_user_${uid}`;
+}
+
+export function loadState(uid = null) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKeyForUser(uid);
+    let raw = localStorage.getItem(key);
+
+    // Migration logic: If user is logged in, and user-specific key does not exist yet,
+    // look for legacy STORAGE_KEY and migrate it into the user's personal key
+    if (!raw && uid) {
+      const legacyRaw = localStorage.getItem(STORAGE_KEY);
+      if (legacyRaw) {
+        raw = legacyRaw;
+        try {
+          localStorage.setItem(key, legacyRaw);
+          // Remove legacy key so it does not bleed into logged-out/guest mode
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (e) {}
+      }
+    }
+
+    // For logged-out / guest users: if no separate guest state exists, return clean default state
     if (!raw) return getDefaultState();
+
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return getDefaultState();
     const defaults = getDefaultState();
@@ -100,12 +123,20 @@ export function loadState() {
   }
 }
 
-export function saveState(state) {
+export function saveState(state, uid = null) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const key = getStorageKeyForUser(uid);
+    localStorage.setItem(key, JSON.stringify(state));
   } catch (err) {
     console.error('Failed to save state to localStorage:', err);
   }
+}
+
+export function clearLoggedOutData() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('neet2027_guest_state');
+  } catch (e) {}
 }
 
 export function getState() {
