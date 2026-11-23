@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import SyllabusView from './components/SyllabusView';
 import MockTestAnalytics from './components/MockTestAnalytics';
+import QuestionBankView from './components/QuestionBankView';
 import FlashcardModal from './components/FlashcardModal';
 import AuthModal from './components/AuthModal';
 import SettingsModal from './components/SettingsModal';
@@ -31,6 +32,7 @@ function AppContent() {
       <main className="pb-8">
         {state.activeTab === 'syllabus' && <SyllabusView />}
         {state.activeTab === 'analytics' && <MockTestAnalytics />}
+        {state.activeTab === 'questions' && <QuestionBankView />}
       </main>
 
       {/* Mobile Quick Navigation Pill */}

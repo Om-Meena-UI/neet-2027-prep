@@ -65,6 +65,8 @@ export function getDefaultState() {
     mockTests: [],
     // todos: array of { id, text, completed, priority }
     todos: defaultTodos,
+    // questionBank: array of { id, title, subject, chapterId, chapterTitle, imageUrl, tags, notes, difficulty, isMastered, createdAt }
+    questions: [],
     selectedChapterId: 'phy-11-4',
     heatmapCollapsed: false,
   };
@@ -90,6 +92,7 @@ export function loadState() {
       trapCards: Array.isArray(parsed.trapCards) ? parsed.trapCards : defaultTraps,
       mockTests: Array.isArray(parsed.mockTests) ? parsed.mockTests : [],
       todos: Array.isArray(parsed.todos) ? parsed.todos : defaultTodos,
+      questions: Array.isArray(parsed.questions) ? parsed.questions : [],
     };
   } catch (err) {
     console.error('Failed to load state from localStorage:', err);
@@ -152,6 +155,7 @@ export function parseAndValidateImport(jsonText) {
     trapCards: Array.isArray(parsed.trapCards) ? parsed.trapCards : defaults.trapCards,
     mockTests: Array.isArray(parsed.mockTests) ? parsed.mockTests : [],
     todos: Array.isArray(parsed.todos) ? parsed.todos : defaults.todos,
+    questions: Array.isArray(parsed.questions) ? parsed.questions : [],
   };
   return {
     state: normalized,

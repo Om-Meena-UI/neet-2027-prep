@@ -14,6 +14,7 @@ import {
   Calendar,
   Layers,
   Settings,
+  FileQuestion,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 import logoImg from '../assets/logo.png';
@@ -23,6 +24,7 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
   const fileInputRef = React.useRef(null);
 
   const pendingTrapsCount = (state.trapCards || []).filter((c) => !c.mastered).length;
+  const questionCount = (state.questions || []).length;
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -88,6 +90,25 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
             {pendingTrapsCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#f97316]/20 text-[#f97316] border border-[#f97316]/30">
                 {pendingTrapsCount}
+              </span>
+            )}
+          </button>
+
+          {/* Question Bank Pill */}
+          <button
+            onClick={() => setActiveTab('questions')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+              state.activeTab === 'questions'
+                ? 'bg-[#262a34] text-white shadow-inner border border-white/10'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+            title="Question Bank Vault"
+          >
+            <FileQuestion className="w-3.5 h-3.5 text-sky-400" />
+            <span>Question Bank</span>
+            {questionCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                {questionCount}
               </span>
             )}
           </button>

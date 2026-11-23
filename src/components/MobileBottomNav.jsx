@@ -5,6 +5,7 @@ import {
   Clock,
   CheckCircle2,
   Settings,
+  FileQuestion,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 
@@ -75,6 +76,19 @@ export default function MobileBottomNav({ onOpenFlashcards, onOpenSettings }) {
         >
           <BarChart2 className="w-4 h-4" />
           <span className="text-[10px] tracking-tight">Mocks</span>
+        </button>
+
+        {/* Question Bank */}
+        <button
+          onClick={() => handleNavClick('questions')}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-full min-h-[44px] min-w-[54px] transition-all active:scale-95 ${
+            state.activeTab === 'questions'
+              ? 'bg-sky-500/20 text-sky-400 font-bold border border-sky-500/30 shadow-sm'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <FileQuestion className="w-4 h-4" />
+          <span className="text-[10px] tracking-tight">Q-Bank</span>
         </button>
 
         {/* Settings */}

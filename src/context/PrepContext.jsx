@@ -462,6 +462,64 @@ export function PrepProvider({ children }) {
     }));
   };
 
+  // Question Bank operations
+  const addQuestion = (questionData) => {
+    const newQuestion = {
+      id: `qb-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+      title: questionData.title?.trim() || 'Untitled Question',
+      subject: questionData.subject || 'Physics',
+      chapterId: questionData.chapterId || '',
+      chapterTitle: questionData.chapterTitle || 'General',
+      imageUrl: questionData.imageUrl || '',
+      tags: Array.isArray(questionData.tags) ? questionData.tags : [],
+      notes: questionData.notes?.trim() || '',
+      difficulty: questionData.difficulty || 'Medium',
+      isMastered: Boolean(questionData.isMastered),
+      createdAt: new Date().toISOString(),
+    };
+
+    setState((prev) => ({
+      ...prev,
+      questions: [newQuestion, ...(prev.questions || [])],
+    }));
+
+    showToast(`Saved question to ${newQuestion.chapterTitle}! 📸`);
+    return newQuestion;
+  };
+
+  const updateQuestion = (id, updates) => {
+    setState((prev) => ({
+      ...prev,
+      questions: (prev.questions || []).map((q) =>
+        q.id === id ? { ...q, ...updates, updatedAt: new Date().toISOString() } : q
+      ),
+    }));
+    showToast('Question updated successfully!');
+  };
+
+  const deleteQuestion = (id) => {
+    setState((prev) => ({
+      ...prev,
+      questions: (prev.questions || []).filter((q) => q.id !== id),
+    }));
+    showToast('Question removed from Question Bank.');
+  };
+
+  const toggleQuestionMastered = (id) => {
+    setState((prev) => {
+      let isNowMastered = false;
+      const updated = (prev.questions || []).map((q) => {
+        if (q.id === id) {
+          isNowMastered = !q.isMastered;
+          return { ...q, isMastered: isNowMastered };
+        }
+        return q;
+      });
+      showToast(isNowMastered ? 'Marked question as Mastered! 🏆' : 'Marked for revision.');
+      return { ...prev, questions: updated };
+    });
+  };
+
   const updateSettings = (partial) => {
     setState((prev) => {
       const updatedSettings = {
@@ -611,6 +669,10 @@ export function PrepProvider({ children }) {
     deleteTrapCard,
     addMockTest,
     deleteMockTest,
+    addQuestion,
+    updateQuestion,
+    deleteQuestion,
+    toggleQuestionMastered,
     exportFullState,
     importFullState,
     updateSettings,
