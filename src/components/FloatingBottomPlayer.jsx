@@ -44,20 +44,22 @@ export default function FloatingBottomPlayer() {
 
   return (
     <>
-      {/* Playlist Drawer (pops up when playlist icon clicked) */}
+      {/* Playlist Drawer (pops up cleanly above MobileBottomNav on mobile, and above bar on desktop) */}
       {showPlaylistDrawer && (
         <div
           ref={drawerRef}
-          className="fixed bottom-20 right-3 sm:right-8 z-50 w-80 max-w-[92vw] sleek-card p-4 space-y-3 shadow-2xl border border-white/10 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed right-3 sm:right-8 z-50 w-80 max-w-[calc(100vw-1.5rem)] sleek-card p-4 space-y-3 shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/10 bg-[#14161c]/95 backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-4 lg:!bottom-20"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 9rem)' }}
         >
           <div className="flex items-center justify-between pb-2 border-b border-white/5">
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-[#55e357]" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Synced Soundtracks</h4>
+              <span className="text-[10px] font-mono text-zinc-500">({tracks.length})</span>
             </div>
             <button
               onClick={() => setShowPlaylistDrawer(false)}
-              className="text-zinc-400 hover:text-white text-xs p-1 rounded-full hover:bg-white/5 transition"
+              className="text-zinc-400 hover:text-white text-xs p-1.5 rounded-full hover:bg-white/5 transition"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
@@ -131,13 +133,17 @@ export default function FloatingBottomPlayer() {
 
       {/* Persistent Floating Bottom Bar (Spotify / YouTube Music Style) */}
       <div
-        className="fixed inset-x-3 sm:inset-x-8 z-40 max-w-5xl mx-auto"
+        className="fixed inset-x-2.5 sm:inset-x-8 z-40 max-w-5xl mx-auto"
         style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)' }}
       >
-        <div className="bg-[#14161c]/95 backdrop-blur-xl border border-white/10 rounded-full px-3.5 sm:px-6 py-2.5 shadow-2xl flex items-center justify-between gap-2.5 sm:gap-6">
+        <div
+          className={`bg-[#14161c]/92 backdrop-blur-2xl border rounded-full px-3 sm:px-5 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.75)] flex items-center justify-between gap-2 sm:gap-6 transition-all ${
+            isPlaying ? 'border-[#55e357]/30 ring-1 ring-[#55e357]/15' : 'border-white/10'
+          }`}
+        >
           {/* Left: Track Info & Album Art */}
-          <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial sm:w-64">
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 shadow-inner">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 sm:flex-initial sm:w-64">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 shadow-inner">
               <img
                 src={currentTrack.cover}
                 alt={currentTrack.name}
@@ -160,18 +166,21 @@ export default function FloatingBottomPlayer() {
                 {currentTrack.name}
               </div>
               <div className="text-[10px] text-zinc-400 flex items-center gap-1.5 truncate">
-                <span className="text-[#55e357] font-semibold">{currentTrack.tag}</span>
-                <span>•</span>
-                <span>{currentTrack.artist}</span>
+                <span className="inline-flex items-center gap-1 text-[#55e357] font-semibold flex-shrink-0">
+                  {isPlaying && <span className="w-1.5 h-1.5 rounded-full bg-[#55e357] animate-pulse" />}
+                  {currentTrack.tag}
+                </span>
+                <span className="flex-shrink-0">•</span>
+                <span className="truncate">{currentTrack.artist}</span>
               </div>
             </div>
           </div>
 
           {/* Center: Playback Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
             <button
               onClick={() => changeTrack(currentTrackIndex - 1)}
-              className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 active:scale-90 transition-transform"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/5 active:scale-90 transition-transform"
               title="Previous Track"
             >
               <SkipBack className="w-4 h-4" />
@@ -195,7 +204,7 @@ export default function FloatingBottomPlayer() {
 
             <button
               onClick={() => changeTrack(currentTrackIndex + 1)}
-              className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 active:scale-90 transition-transform"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/5 active:scale-90 transition-transform"
               title="Next Track"
             >
               <SkipForward className="w-4 h-4" />

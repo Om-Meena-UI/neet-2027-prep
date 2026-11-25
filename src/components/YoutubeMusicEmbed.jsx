@@ -30,13 +30,17 @@ export default function YoutubeMusicEmbed() {
     e.preventDefault();
     if (!customInputUrl.trim()) return;
 
-    let url = customInputUrl.trim();
+    const url = customInputUrl.trim();
     let vidId = '';
 
     if (url.includes('v=')) {
       vidId = url.split('v=')[1].split('&')[0];
     } else if (url.includes('youtu.be/')) {
       vidId = url.split('youtu.be/')[1].split('?')[0];
+    } else if (url.includes('/live/')) {
+      vidId = url.split('/live/')[1].split('?')[0];
+    } else if (url.includes('/shorts/')) {
+      vidId = url.split('/shorts/')[1].split('?')[0];
     } else {
       vidId = url;
     }
@@ -51,35 +55,35 @@ export default function YoutubeMusicEmbed() {
   const embedSrc = `https://www.youtube.com/embed/${currentTrack.videoId}?enablejsapi=1&version=3&rel=0&playsinline=1`;
 
   return (
-    <div className="sleek-card p-5 space-y-4 relative overflow-hidden">
+    <div className="sleek-card p-4 sm:p-5 space-y-4 relative overflow-hidden">
       {/* Background radial accent glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header with Hide / Show Screen Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {/* YouTube Music Red Badge */}
-          <div className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20">
+          <div className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20 flex-shrink-0">
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
             </svg>
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
-              <span>YouTube Music</span>
-              <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 font-bold border border-red-500/30">
+              <span className="truncate">YouTube Music</span>
+              <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 font-bold border border-red-500/30 flex-shrink-0">
                 Live
               </span>
             </h3>
-            <p className="text-[10px] text-zinc-400">Stream playlists directly in your dashboard</p>
+            <p className="text-[10px] text-zinc-400 truncate">Stream study playlists directly</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {/* Hide/Show Video Screen button without stopping audio */}
           <button
             onClick={() => setIsSidebarPlayerHidden(!isSidebarPlayerHidden)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition border ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition border whitespace-nowrap active:scale-95 ${
               isSidebarPlayerHidden
                 ? 'bg-[#262a34] text-zinc-300 border-white/10 hover:text-white'
                 : 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
@@ -93,12 +97,12 @@ export default function YoutubeMusicEmbed() {
             {isSidebarPlayerHidden ? (
               <>
                 <Eye className="w-3.5 h-3.5" />
-                <span className="text-[10px]">Show Screen</span>
+                <span className="text-[10px]">Show</span>
               </>
             ) : (
               <>
                 <EyeOff className="w-3.5 h-3.5" />
-                <span className="text-[10px]">Hide Screen</span>
+                <span className="text-[10px]">Hide</span>
               </>
             )}
           </button>
@@ -107,7 +111,7 @@ export default function YoutubeMusicEmbed() {
             href="https://music.youtube.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 transition"
+            className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 transition"
             title="Open YouTube Music"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -123,7 +127,7 @@ export default function YoutubeMusicEmbed() {
             <button
               key={track.id}
               onClick={() => changeTrack(idx)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition whitespace-nowrap border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition whitespace-nowrap border active:scale-95 ${
                 isSelected
                   ? 'bg-[#55e357] text-black border-[#55e357] shadow-glow-lime font-bold'
                   : 'bg-[#14161c] text-zinc-400 hover:text-white border-white/5 hover:border-white/10'
@@ -160,11 +164,15 @@ export default function YoutubeMusicEmbed() {
         />
       </div>
 
-      {/* When video screen is hidden, show audio status banner */}
+      {/* When video screen is hidden, show sleek mini-player */}
       {isSidebarPlayerHidden && (
-        <div className="p-3 rounded-2xl bg-[#14161c] border border-white/5 flex items-center justify-between gap-3 text-xs">
+        <div
+          className={`p-3 rounded-2xl bg-[#14161c] border flex items-center justify-between gap-3 text-xs transition-all ${
+            isPlaying ? 'border-[#55e357]/30 shadow-sm' : 'border-white/5'
+          }`}
+        >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+            <div className="relative w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
               <img
                 src={currentTrack.cover}
                 alt={currentTrack.name}
@@ -181,25 +189,27 @@ export default function YoutubeMusicEmbed() {
               )}
             </div>
             <div className="min-w-0">
-              <div className="text-white font-bold truncate text-[11px] leading-tight">
+              <div className="text-white font-bold truncate text-xs leading-tight">
                 {currentTrack.name}
               </div>
-              <div className="text-[10px] text-zinc-400">
-                {currentTrack.tag} • {isPlaying ? 'Playing' : 'Paused'}
+              <div className="text-[10px] text-zinc-400 flex items-center gap-1 truncate">
+                <span className="text-[#55e357] font-semibold">{currentTrack.tag}</span>
+                <span>•</span>
+                <span>{isPlaying ? 'Playing' : 'Paused'}</span>
               </div>
             </div>
           </div>
 
           <button
             onClick={togglePlay}
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition shadow-sm flex-shrink-0 active:scale-95 ${
-              isPlaying ? 'bg-[#55e357] text-black' : 'bg-[#262a34] text-white hover:bg-white/10'
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition shadow-sm flex-shrink-0 active:scale-95 ${
+              isPlaying ? 'bg-[#55e357] text-black shadow-glow-lime' : 'bg-[#262a34] text-white hover:bg-white/10'
             }`}
           >
             {isPlaying ? (
-              <Pause className="w-3 h-3 fill-current" />
+              <Pause className="w-3.5 h-3.5 fill-current" />
             ) : (
-              <Play className="w-3 h-3 fill-current ml-0.5" />
+              <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
             )}
           </button>
         </div>
@@ -207,18 +217,18 @@ export default function YoutubeMusicEmbed() {
 
       {/* Embed Custom YouTube Music Song / Playlist Link */}
       <form onSubmit={handleCustomUrlSubmit}>
-        <div className="flex items-center gap-2 bg-[#14161c] p-1.5 rounded-full border border-white/5">
+        <div className="flex items-center gap-2 bg-[#14161c] p-1.5 rounded-full border border-white/5 focus-within:border-red-500/40 transition-colors">
           <Search className="w-3.5 h-3.5 text-zinc-500 ml-2.5 flex-shrink-0" />
           <input
             type="text"
             placeholder="Paste YouTube or YT Music URL..."
             value={customInputUrl}
             onChange={(e) => setCustomInputUrl(e.target.value)}
-            className="flex-1 bg-transparent px-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
+            className="flex-1 min-w-0 bg-transparent px-1.5 text-base sm:text-xs text-white placeholder-zinc-500 focus:outline-none"
           />
           <button
             type="submit"
-            className="px-3.5 py-1 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold transition flex-shrink-0 shadow-sm"
+            className="px-3.5 py-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[11px] font-bold transition flex-shrink-0 shadow-sm active:scale-95"
           >
             Play
           </button>
