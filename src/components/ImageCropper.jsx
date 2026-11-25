@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Check, RotateCw, RotateCcw, Crop, X } from 'lucide-react';
+import { Check, RotateCw, RotateCcw, Maximize, Crop, X, Sparkles } from 'lucide-react';
 
 const MIN_CROP_PCT = 8;
 
 export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
   const [displaySrc, setDisplaySrc] = useState(imageSrc);
   const [crop, setCrop] = useState({ x: 4, y: 4, w: 92, h: 92 });
+  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
+  const [scanMode, setScanMode] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
   const containerRef = useRef(null);
@@ -15,10 +17,18 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
   useEffect(() => {
     setDisplaySrc(imageSrc);
     setCrop({ x: 4, y: 4, w: 92, h: 92 });
+    setScanMode(false);
   }, [imageSrc]);
 
-  // Rotate the current displaySrc by 90 degrees clockwise
-  const handleRotate = () => {
+  const handleImageLoad = () => {
+    const img = imgRef.current;
+    if (img && img.naturalWidth) {
+      setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+    }
+  };
+
+  // Rotate the current displaySrc by 90 degrees (-90 or +90)
+  const handleRotate = (degrees) => {
     const img = imgRef.current;
     if (!img || !img.naturalWidth) return;
 
@@ -29,7 +39,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
     if (!ctx) return;
 
     ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(Math.PI / 2);
+    ctx.rotate((degrees * Math.PI) / 180);
     ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
 
     setDisplaySrc(canvas.toDataURL('image/jpeg', 0.92));
@@ -141,10 +151,13 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
+      if (scanMode) {
+        ctx.filter = 'grayscale(1) contrast(1.4) brightness(1.06)';
+      }
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
 
       const outputFormat = 'image/jpeg';
-      const dataUrl = canvas.toDataURL(outputFormat, 0.85);
+      const dataUrl = canvas.toDataURL(outputFormat, 0.86);
       const head = 'data:' + outputFormat + ';base64,';
       const sizeBytes = Math.round(((dataUrl.length - head.length) * 3) / 4);
 
@@ -159,54 +172,110 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
     }
   };
 
+  const cropPxW = Math.max(1, Math.round((crop.w / 100) * naturalSize.width));
+  const cropPxH = Math.max(1, Math.round((crop.h / 100) * naturalSize.height));
+
   return (
-    <div className="rounded-2xl border border-[#55e357]/30 bg-[#0e1013] p-3 sm:p-4 space-y-3">
+    <div className="rounded-2xl border border-[#55e357]/30 bg-[#0e1013] p-3 sm:p-4 space-y-3 shadow-inner">
       {/* Cropper Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/10">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <Crop className="w-4 h-4 text-[#55e357]" />
-          <span className="text-xs font-bold text-white">
-            Drag corners to crop question
-          </span>
+          <div className="w-6 h-6 rounded-lg bg-[#55e357]/15 text-[#55e357] flex items-center justify-center">
+            <Crop className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-white block leading-tight">
+              Crop &amp; Enhance
+            </span>
+            {naturalSize.width > 0 && (
+              <span className="text-[10px] font-mono text-zinc-400">
+                {cropPxW} × {cropPxH} px
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
-            onClick={handleRotate}
-            className="px-2.5 py-1.5 rounded-xl bg-[#1a1d24] hover:bg-[#262a34] text-zinc-200 text-[11px] font-semibold flex items-center gap-1 border border-white/10 transition active:scale-95"
-            title="Rotate 90° clockwise"
+            onClick={() => setScanMode((prev) => !prev)}
+            className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 border transition active:scale-95 ${
+              scanMode
+                ? 'bg-sky-500/20 text-sky-300 border-sky-400/40 shadow-sm'
+                : 'bg-[#1a1d24] hover:bg-[#262a34] text-zinc-300 border-white/10'
+            }`}
+            title="Boost contrast for dim paper photos"
           >
-            <RotateCw className="w-3.5 h-3.5 text-sky-400" />
-            <span>Rotate</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Crisp Scan</span>
           </button>
+
+          <div className="flex items-center bg-[#1a1d24] rounded-xl border border-white/10 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleRotate(-90)}
+              className="px-2 py-1.5 hover:bg-[#262a34] text-zinc-200 transition active:scale-95 border-r border-white/10"
+              title="Rotate 90° left"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRotate(90)}
+              className="px-2 py-1.5 hover:bg-[#262a34] text-zinc-200 transition active:scale-95"
+              title="Rotate 90° right"
+            >
+              <RotateCw className="w-3.5 h-3.5 text-sky-400" />
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={handleResetCrop}
-            className="px-2.5 py-1.5 rounded-xl bg-[#1a1d24] hover:bg-[#262a34] text-zinc-200 text-[11px] font-semibold flex items-center gap-1 border border-white/10 transition active:scale-95"
+            className="px-2.5 py-1.5 rounded-xl bg-[#1a1d24] hover:bg-[#262a34] text-zinc-300 text-[11px] font-semibold flex items-center gap-1 border border-white/10 transition active:scale-95"
             title="Select full image"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
+            <Maximize className="w-3 h-3 text-zinc-400" />
             <span>Full</span>
           </button>
         </div>
       </div>
 
       {/* Interactive Crop Canvas Area */}
-      <div className="flex justify-center bg-black/70 rounded-xl p-2 overflow-hidden">
+      <div className="flex justify-center bg-black/75 rounded-xl p-3 sm:p-4">
         <div
           ref={containerRef}
-          className="relative inline-block select-none touch-none overflow-hidden rounded-lg"
+          className="relative inline-block select-none touch-none"
         >
           <img
             ref={imgRef}
             src={displaySrc}
             alt="Crop target"
+            onLoad={handleImageLoad}
             draggable={false}
-            className="block max-h-[46vh] w-auto max-w-full object-contain pointer-events-none"
+            style={
+              scanMode
+                ? { filter: 'grayscale(1) contrast(1.4) brightness(1.06)' }
+                : undefined
+            }
+            className="block max-h-[45vh] w-auto max-w-full object-contain pointer-events-none rounded-sm"
           />
 
-          {/* Draggable Crop Box */}
+          {/* Clipped Darkened Mask Layer (only masks outside the crop box) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-sm">
+            <div
+              style={{
+                left: `${crop.x}%`,
+                top: `${crop.y}%`,
+                width: `${crop.w}%`,
+                height: `${crop.h}%`,
+                boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.68)',
+              }}
+              className="absolute"
+            />
+          </div>
+
+          {/* Unclipped Interactive Crop Box & Handles */}
           <div
             onPointerDown={(e) => startDrag(e, 'move')}
             style={{
@@ -214,9 +283,8 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
               top: `${crop.y}%`,
               width: `${crop.w}%`,
               height: `${crop.h}%`,
-              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)',
             }}
-            className="absolute border-2 border-[#55e357] cursor-move"
+            className="absolute border border-[#55e357]/90 cursor-move"
           >
             {/* Rule-of-thirds grid */}
             <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
@@ -231,80 +299,85 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
               <div />
             </div>
 
-            {/* Corner Handles (large touch targets) */}
+            {/* L-Bracket Corner Handles (large touch targets, z-20 priority) */}
             <div
               onPointerDown={(e) => startDrag(e, 'nw')}
-              className="absolute -top-3 -left-3 w-7 h-7 flex items-center justify-center cursor-nwse-resize"
+              className="absolute -top-3.5 -left-3.5 w-9 h-9 z-20 flex items-center justify-center cursor-nwse-resize"
             >
-              <span className="w-3.5 h-3.5 rounded-sm bg-[#55e357] border-2 border-black shadow" />
+              <span className="w-4 h-4 border-t-[3px] border-l-[3px] border-[#55e357] rounded-tl-sm drop-shadow" />
             </div>
             <div
               onPointerDown={(e) => startDrag(e, 'ne')}
-              className="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center cursor-nesw-resize"
+              className="absolute -top-3.5 -right-3.5 w-9 h-9 z-20 flex items-center justify-center cursor-nesw-resize"
             >
-              <span className="w-3.5 h-3.5 rounded-sm bg-[#55e357] border-2 border-black shadow" />
+              <span className="w-4 h-4 border-t-[3px] border-r-[3px] border-[#55e357] rounded-tr-sm drop-shadow" />
             </div>
             <div
               onPointerDown={(e) => startDrag(e, 'sw')}
-              className="absolute -bottom-3 -left-3 w-7 h-7 flex items-center justify-center cursor-nesw-resize"
+              className="absolute -bottom-3.5 -left-3.5 w-9 h-9 z-20 flex items-center justify-center cursor-nesw-resize"
             >
-              <span className="w-3.5 h-3.5 rounded-sm bg-[#55e357] border-2 border-black shadow" />
+              <span className="w-4 h-4 border-b-[3px] border-l-[3px] border-[#55e357] rounded-bl-sm drop-shadow" />
             </div>
             <div
               onPointerDown={(e) => startDrag(e, 'se')}
-              className="absolute -bottom-3 -right-3 w-7 h-7 flex items-center justify-center cursor-nwse-resize"
+              className="absolute -bottom-3.5 -right-3.5 w-9 h-9 z-20 flex items-center justify-center cursor-nwse-resize"
             >
-              <span className="w-3.5 h-3.5 rounded-sm bg-[#55e357] border-2 border-black shadow" />
+              <span className="w-4 h-4 border-b-[3px] border-r-[3px] border-[#55e357] rounded-br-sm drop-shadow" />
             </div>
 
-            {/* Edge Handles */}
+            {/* Edge Handles (z-10) */}
             <div
               onPointerDown={(e) => startDrag(e, 'n')}
-              className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-4 flex items-center justify-center cursor-ns-resize"
+              className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-5 z-10 flex items-center justify-center cursor-ns-resize"
             >
-              <span className="w-6 h-1 rounded-full bg-[#55e357]" />
+              <span className="w-5 h-1 rounded-full bg-[#55e357] shadow" />
             </div>
             <div
               onPointerDown={(e) => startDrag(e, 's')}
-              className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-10 h-4 flex items-center justify-center cursor-ns-resize"
+              className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-8 h-5 z-10 flex items-center justify-center cursor-ns-resize"
             >
-              <span className="w-6 h-1 rounded-full bg-[#55e357]" />
+              <span className="w-5 h-1 rounded-full bg-[#55e357] shadow" />
             </div>
             <div
               onPointerDown={(e) => startDrag(e, 'w')}
-              className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-10 flex items-center justify-center cursor-ew-resize"
+              className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-8 z-10 flex items-center justify-center cursor-ew-resize"
             >
-              <span className="w-1 h-6 rounded-full bg-[#55e357]" />
+              <span className="w-1 h-5 rounded-full bg-[#55e357] shadow" />
             </div>
             <div
               onPointerDown={(e) => startDrag(e, 'e')}
-              className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-10 flex items-center justify-center cursor-ew-resize"
+              className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-8 z-10 flex items-center justify-center cursor-ew-resize"
             >
-              <span className="w-1 h-6 rounded-full bg-[#55e357]" />
+              <span className="w-1 h-5 rounded-full bg-[#55e357] shadow" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="flex items-center justify-end gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-3.5 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-[#1a1d24] hover:bg-[#262a34] border border-white/10 transition flex items-center gap-1.5"
-        >
-          <X className="w-3.5 h-3.5" />
-          <span>Use Full Image</span>
-        </button>
-        <button
-          type="button"
-          disabled={isApplying}
-          onClick={handleApplyCrop}
-          className="px-4 py-2 rounded-xl text-xs font-bold bg-[#55e357] hover:bg-[#48ce4a] text-black transition shadow-glow-lime active:scale-95 flex items-center gap-1.5 disabled:opacity-60"
-        >
-          <Check className="w-3.5 h-3.5" />
-          <span>{isApplying ? 'Cropping...' : 'Apply Crop'}</span>
-        </button>
+      <div className="flex items-center justify-between gap-2 pt-1">
+        <span className="text-[10px] text-zinc-500 hidden sm:inline">
+          Tip: Drag inside box to move, or use Crisp Scan for book photos
+        </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3.5 py-2 min-h-[38px] rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-[#1a1d24] hover:bg-[#262a34] border border-white/10 transition flex items-center gap-1.5"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Use Full Image</span>
+          </button>
+          <button
+            type="button"
+            disabled={isApplying}
+            onClick={handleApplyCrop}
+            className="px-4 py-2 min-h-[38px] rounded-xl text-xs font-bold bg-[#55e357] hover:bg-[#48ce4a] text-black transition shadow-glow-lime active:scale-95 flex items-center gap-1.5 disabled:opacity-60"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>{isApplying ? 'Cropping...' : 'Apply Crop'}</span>
+          </button>
+        </div>
       </div>
     </div>
   );
