@@ -38,7 +38,10 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
   };
 
   return (
-    <header className="sticky top-0 z-30 pt-3 pb-2 px-3 sm:px-6 max-w-full">
+    <header
+      className="sticky top-0 z-30 pb-2 px-3 sm:px-6 max-w-full bg-gradient-to-b from-[#0e1013] via-[#0e1013]/90 to-transparent"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+    >
       <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-2">
         {/* Left Floating Capsule: Logo & View Switcher */}
         <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-sleek min-w-0">

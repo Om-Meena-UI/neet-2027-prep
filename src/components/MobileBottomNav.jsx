@@ -24,7 +24,10 @@ export default function MobileBottomNav({ onOpenFlashcards, onOpenSettings }) {
   const isMocksActive = state.activeTab === 'analytics';
 
   return (
-    <nav className="lg:hidden fixed bottom-20 inset-x-2.5 sm:inset-x-4 z-40">
+    <nav
+      className="lg:hidden fixed inset-x-2.5 sm:inset-x-4 z-40"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}
+    >
       <div className="bg-[#14161c]/95 backdrop-blur-2xl border border-white/10 rounded-full px-1.5 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.8)] flex items-center justify-between gap-0.5">
         {/* Roadmap (Chapters) */}
         <button

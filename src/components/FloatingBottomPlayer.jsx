@@ -130,7 +130,10 @@ export default function FloatingBottomPlayer() {
       )}
 
       {/* Persistent Floating Bottom Bar (Spotify / YouTube Music Style) */}
-      <div className="fixed bottom-3 inset-x-3 sm:inset-x-8 z-40 max-w-5xl mx-auto">
+      <div
+        className="fixed inset-x-3 sm:inset-x-8 z-40 max-w-5xl mx-auto"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)' }}
+      >
         <div className="bg-[#14161c]/95 backdrop-blur-xl border border-white/10 rounded-full px-3.5 sm:px-6 py-2.5 shadow-2xl flex items-center justify-between gap-2.5 sm:gap-6">
           {/* Left: Track Info & Album Art */}
           <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial sm:w-64">

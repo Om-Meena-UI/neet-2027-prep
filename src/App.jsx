@@ -20,7 +20,7 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen w-full overflow-x-clip lg:overflow-x-visible bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black pb-40 lg:pb-28">
+    <div className="min-h-screen w-full bg-[#0e1013] text-zinc-100 antialiased selection:bg-[#55e357] selection:text-black pb-44 lg:pb-28">
       {/* Sleek Floating Capsule Top Navbar */}
       <Navbar
         onOpenFlashcards={() => setIsFlashcardOpen(true)}
@@ -29,7 +29,7 @@ function AppContent() {
       />
 
       {/* Main Body */}
-      <main className="pb-8">
+      <main className="pb-8 overflow-x-clip lg:overflow-x-visible">
         {state.activeTab === 'syllabus' && <SyllabusView />}
         {state.activeTab === 'analytics' && <MockTestAnalytics />}
         {state.activeTab === 'questions' && <QuestionBankView />}
