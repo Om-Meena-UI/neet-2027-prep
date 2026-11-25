@@ -38,22 +38,22 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
   };
 
   return (
-    <header className="sticky top-0 z-30 pt-3 pb-2 px-3 sm:px-6">
+    <header className="sticky top-0 z-30 pt-3 pb-2 px-3 sm:px-6 max-w-full">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-2">
         {/* Left Floating Capsule: Logo & View Switcher */}
-        <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-sleek">
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-sleek min-w-0">
           {/* Logo badge */}
-          <div className="flex items-center gap-2 pr-1.5 sm:pr-2 border-r border-white/10">
+          <div className="flex items-center gap-2 pr-1.5 sm:pr-2 border-r border-white/10 flex-shrink-0">
             <div className="w-7 h-7 rounded-xl bg-black flex items-center justify-center border border-white/10 overflow-hidden shadow-inner">
               <img src={logoImg} alt="NEET 2027" className="w-full h-full object-cover" />
             </div>
-            <span className="font-bold text-xs sm:text-sm tracking-tight text-white hidden sm:inline">
+            <span className="font-bold text-xs sm:text-sm tracking-tight text-white">
               NEET<span className="text-[#55e357]">27</span>
             </span>
           </div>
 
-          {/* Navigation Pills */}
-          <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Navigation Pills (Desktop: lg+ since MobileBottomNav handles these on mobile/tablet) */}
+          <div className="hidden lg:flex items-center gap-1.5">
             <button
               onClick={() => setActiveTab('syllabus')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
@@ -82,11 +82,11 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
           {/* Trap Cards Pill */}
           <button
             onClick={onOpenFlashcards}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#262a34]/60 hover:bg-[#262a34] text-zinc-300 hover:text-white transition border border-white/5"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#262a34]/60 hover:bg-[#262a34] text-zinc-300 hover:text-white transition border border-white/5 flex-shrink-0"
             title="NEET Trap Cards"
           >
-            <Zap className="w-3 h-3 text-amber-400" />
-            <span className="hidden md:inline">Traps</span>
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>Traps</span>
             {pendingTrapsCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#f97316]/20 text-[#f97316] border border-[#f97316]/30">
                 {pendingTrapsCount}
@@ -94,10 +94,10 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
             )}
           </button>
 
-          {/* Question Bank Pill */}
+          {/* Question Bank Pill (Desktop: lg+ since MobileBottomNav has Q-Bank) */}
           <button
             onClick={() => setActiveTab('questions')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+            className={`hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
               state.activeTab === 'questions'
                 ? 'bg-[#262a34] text-white shadow-inner border border-white/10'
                 : 'text-zinc-400 hover:text-white'
@@ -115,7 +115,7 @@ export default function Navbar({ onOpenFlashcards, onOpenAuth, onOpenSettings })
         </div>
 
         {/* Right Floating Capsule: Export/Import & Profile / Sign In */}
-        <div className="flex items-center gap-1 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-sleek">
+        <div className="flex items-center gap-1 sm:gap-2 bg-[#1a1d24] border border-white/5 rounded-full px-2 py-1.5 sm:px-4 sm:py-2 shadow-sleek flex-shrink-0">
           {/* Export JSON (Hidden on tiny mobile, visible from sm up) */}
           <button
             onClick={exportFullState}

@@ -157,26 +157,26 @@ export default function Heatmap() {
       {/* Heatmap Card */}
       <div className="p-4 sm:p-5 rounded-3xl bg-[#14161c] border border-white/5 space-y-3">
         {/* Top Bar inside Heatmap */}
-        <div className="flex items-center justify-between pb-1 border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#55e357]" />
-            <span className="text-xs font-bold text-white tracking-wide uppercase">
-              Study Consistency Map
+        <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Calendar className="w-4 h-4 text-[#55e357] flex-shrink-0" />
+            <span className="text-[11px] sm:text-xs font-bold text-white tracking-wide uppercase truncate">
+              Consistency Map
             </span>
           </div>
 
-          {/* Mobile Display Mode Pill: Fit Screen (100% of year visible) vs Zoom Scroll */}
-          <div className="sm:hidden flex items-center bg-[#1a1d24] p-0.5 rounded-xl border border-white/5 text-[10px] font-bold">
+          {/* Mobile Display Mode Pill: Fit Year (100% of year visible) vs Scroll */}
+          <div className="sm:hidden flex items-center bg-[#1a1d24] p-0.5 rounded-xl border border-white/5 text-[10px] font-bold flex-shrink-0">
             <button
               type="button"
               onClick={() => setMobileMode('fit')}
-              className={`px-2.5 py-1 rounded-lg transition-all active:scale-95 ${
+              className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all active:scale-95 ${
                 mobileMode === 'fit'
                   ? 'bg-[#55e357] text-black shadow-glow-lime'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Fit Screen
+              Fit Year
             </button>
             <button
               type="button"
@@ -188,13 +188,13 @@ export default function Heatmap() {
                   }
                 }, 50);
               }}
-              className={`px-2.5 py-1 rounded-lg transition-all active:scale-95 ${
+              className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all active:scale-95 ${
                 mobileMode === 'scroll'
                   ? 'bg-[#55e357] text-black shadow-glow-lime'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Zoom Scroll
+              Scroll
             </button>
           </div>
 

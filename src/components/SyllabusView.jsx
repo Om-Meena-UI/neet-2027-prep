@@ -513,7 +513,7 @@ export default function SyllabusView() {
                           </div>
 
                           {/* Bottom Card Controls with tactile capsule toggles */}
-                          <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2 mt-auto">
+                          <div className="pt-3 border-t border-white/5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 mt-auto">
                             <div className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0">
                               <button
                                 type="button"
