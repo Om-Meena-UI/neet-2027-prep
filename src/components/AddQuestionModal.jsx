@@ -12,9 +12,11 @@ import {
   AlertCircle,
   HelpCircle,
   RotateCw,
+  Crop,
 } from 'lucide-react';
 import { usePrep } from '../context/PrepContext';
 import { compressImageFile, extractImageFromClipboard } from '../utils/imageCompressor';
+import ImageCropper from './ImageCropper';
 
 // Preset tags with distinctive color themes
 export const PRESET_TAGS = [
@@ -46,8 +48,10 @@ export default function AddQuestionModal({
 
   // Image State
   const [imageUrl, setImageUrl] = useState('');
+  const [rawImageUrl, setRawImageUrl] = useState('');
   const [imageMeta, setImageMeta] = useState(null); // { sizeKb, width, height }
   const [isCompressing, setIsCompressing] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const cameraInputRef = useRef(null);
@@ -55,6 +59,7 @@ export default function AddQuestionModal({
 
   // Reset or initialize form
   useEffect(() => {
+    setIsCropping(false);
     if (editingQuestion) {
       setSubject(editingQuestion.subject || 'Physics');
       setChapterId(editingQuestion.chapterId || '');
@@ -63,6 +68,7 @@ export default function AddQuestionModal({
       setDifficulty(editingQuestion.difficulty || 'Medium');
       setTags(editingQuestion.tags || ['Frequently Asked Question']);
       setImageUrl(editingQuestion.imageUrl || '');
+      setRawImageUrl(editingQuestion.imageUrl || '');
       setIsMastered(Boolean(editingQuestion.isMastered));
       setImageMeta(null);
     } else {
@@ -73,6 +79,7 @@ export default function AddQuestionModal({
       setDifficulty('Medium');
       setTags(['Frequently Asked Question']);
       setImageUrl('');
+      setRawImageUrl('');
       setIsMastered(false);
       setImageMeta(null);
     }
@@ -108,7 +115,8 @@ export default function AddQuestionModal({
     if (!file) return;
     try {
       setIsCompressing(true);
-      const res = await compressImageFile(file, 1200, 0.82);
+      const res = await compressImageFile(file, 1400, 0.88);
+      setRawImageUrl(res.dataUrl);
       setImageUrl(res.dataUrl);
       setImageMeta({
         sizeKb: res.sizeKb,
@@ -116,6 +124,7 @@ export default function AddQuestionModal({
         width: res.width,
         height: res.height,
       });
+      setIsCropping(true);
       // If title is empty, prefill a nice default
       if (!title.trim()) {
         const found = allChapters.find((c) => c.id === chapterId);
@@ -268,44 +277,70 @@ export default function AddQuestionModal({
             />
 
             {imageUrl ? (
-              /* Image Preview Box */
-              <div className="relative rounded-2xl border border-white/10 overflow-hidden bg-black/60 group">
-                <img
-                  src={imageUrl}
-                  alt="Question Preview"
-                  className="w-full max-h-72 object-contain mx-auto"
+              isCropping ? (
+                <ImageCropper
+                  imageSrc={rawImageUrl || imageUrl}
+                  onCropComplete={(cropped) => {
+                    setImageUrl(cropped.dataUrl);
+                    setImageMeta({
+                      sizeKb: cropped.sizeKb,
+                      width: cropped.width,
+                      height: cropped.height,
+                    });
+                    setIsCropping(false);
+                    showToast('Image cropped! ✂️');
+                  }}
+                  onCancel={() => setIsCropping(false)}
                 />
+              ) : (
+                /* Image Preview Box with persistent mobile-friendly action bar */
+                <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/60">
+                  <img
+                    src={imageUrl}
+                    alt="Question Preview"
+                    className="w-full max-h-72 object-contain mx-auto"
+                  />
 
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
-                  <button
-                    type="button"
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur-md border border-white/10 transition"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Retake Photo</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur-md border border-white/10 transition"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Replace File</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageUrl('');
-                      setImageMeta(null);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold flex items-center gap-1.5 border border-rose-500/30 transition"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>Remove</span>
-                  </button>
+                  <div className="p-2.5 bg-[#191d24] border-t border-white/10 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsCropping(true)}
+                      className="px-3 py-1.5 rounded-xl bg-[#55e357]/15 hover:bg-[#55e357]/25 text-[#55e357] text-xs font-bold flex items-center gap-1.5 border border-[#55e357]/30 transition active:scale-95"
+                    >
+                      <Crop className="w-3.5 h-3.5" />
+                      <span>Crop / Rotate</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition active:scale-95"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Retake</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition active:scale-95"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Replace</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageUrl('');
+                        setRawImageUrl('');
+                        setImageMeta(null);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-semibold flex items-center gap-1.5 border border-rose-500/30 transition active:scale-95"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
             ) : (
               /* Drop / Upload Zone */
               <div
